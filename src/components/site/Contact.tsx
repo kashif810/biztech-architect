@@ -1,34 +1,68 @@
 import { useState } from "react";
 import { Mail, MessageCircle, MapPin, Phone, Send, CheckCircle2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const reqTypes = ["IT Hardware Supply", "Networking & Infrastructure", "CCTV / Surveillance", "IT Support / AMC", "Corporate Bulk Procurement", "Other"];
 
-const PHONE = "+923000000000"; // placeholder — update with real number
+const PHONE = "+923218446447"; // update if number differs
 const EMAIL = "info@evertech.com.pk";
 
 export function Contact() {
   const [sent, setSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (submitting) return;
     const form = new FormData(e.currentTarget);
+    const payload = {
+      name: String(form.get("name") ?? "").trim().slice(0, 100),
+      company: String(form.get("company") ?? "").trim().slice(0, 150),
+      email: String(form.get("email") ?? "").trim().slice(0, 255),
+      phone: String(form.get("phone") ?? "").trim().slice(0, 40),
+      req_type: String(form.get("reqType") ?? "").trim().slice(0, 80),
+      product: String(form.get("product") ?? "").trim().slice(0, 300),
+      qty: String(form.get("qty") ?? "").trim().slice(0, 40) || null,
+      message: String(form.get("message") ?? "").trim().slice(0, 2000),
+    };
+
+    setSubmitting(true);
+    const { error } = await supabase.from("leads").insert(payload);
+    setSubmitting(false);
+
+    if (error) {
+      console.error("Lead insert failed:", error);
+      toast.error("Could not save your request. Please try again or contact us directly.");
+      return;
+    }
+
     const lines = [
       `New Quotation Request — Evertech Corporation`,
       ``,
-      `Name: ${form.get("name")}`,
-      `Company: ${form.get("company")}`,
-      `Email: ${form.get("email")}`,
-      `Phone: ${form.get("phone")}`,
-      `Requirement Type: ${form.get("reqType")}`,
-      `Product / Service: ${form.get("product")}`,
-      `Quantity: ${form.get("qty")}`,
+      `Name: ${payload.name}`,
+      `Company: ${payload.company}`,
+      `Email: ${payload.email}`,
+      `Phone: ${payload.phone}`,
+      `Requirement Type: ${payload.req_type}`,
+      `Product / Service: ${payload.product}`,
+      `Quantity: ${payload.qty ?? "-"}`,
       ``,
       `Message:`,
-      `${form.get("message")}`,
+      `${payload.message}`,
     ].join("\n");
-    const url = `https://wa.me/${PHONE.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(lines)}`;
-    window.open(url, "_blank");
+
+    const subject = `RFQ from ${payload.company} — ${payload.req_type}`;
+    const waUrl = `https://wa.me/${PHONE.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(lines)}`;
+    const mailUrl = `mailto:${EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines)}`;
+
+    // Save lead first, then hand the message off to WhatsApp and email.
+    window.open(waUrl, "_blank", "noopener,noreferrer");
+    window.location.href = mailUrl;
+
+    toast.success("Request saved. WhatsApp and email opened for delivery.");
     setSent(true);
+    (e.currentTarget as HTMLFormElement).reset();
   }
 
   return (
@@ -102,8 +136,8 @@ export function Contact() {
 
             <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <p className="text-xs text-muted-foreground">By submitting you consent to be contacted by Evertech regarding your inquiry.</p>
-              <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-sm bg-[var(--navy-deep)] hover:bg-[var(--steel)] px-7 py-3.5 text-sm font-semibold text-white transition">
-                {sent ? <><CheckCircle2 className="h-4 w-4"/> Sent — check WhatsApp</> : <><Send className="h-4 w-4" /> Submit Request</>}
+              <button type="submit" disabled={submitting} className="inline-flex items-center justify-center gap-2 rounded-sm bg-[var(--navy-deep)] hover:bg-[var(--steel)] disabled:opacity-60 disabled:cursor-not-allowed px-7 py-3.5 text-sm font-semibold text-white transition">
+                {submitting ? <>Submitting…</> : sent ? <><CheckCircle2 className="h-4 w-4"/> Sent — check WhatsApp</> : <><Send className="h-4 w-4" /> Submit Request</>}
               </button>
             </div>
           </form>
