@@ -33,10 +33,9 @@ export function Header() {
     >
       <div className="container-x flex h-16 md:h-20 items-center justify-between">
         <Link to="/" className="flex items-center gap-3">
-          <img src={logo} alt="Evertech" className="h-9 w-9" />
-          <div className="leading-tight">
-            <div className="text-white font-display font-bold tracking-tight text-base md:text-lg">EVERTECH</div>
-            <div className="text-[10px] md:text-[11px] uppercase tracking-[0.2em] text-white/60">Corporation</div>
+          <img src={logo} alt="Evertech" className="h-10 w-10" />
+          <div className="text-white font-display font-bold tracking-tight text-base md:text-lg">
+            EverTech Corporation
           </div>
         </Link>
 
