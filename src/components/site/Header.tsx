@@ -1,20 +1,16 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 import logo from "@/assets/evertech-logo.png";
+import { productCategories, services } from "@/data/catalog";
 
-const navItems = [
-  { label: "Solutions", href: "#solutions" },
-  { label: "Services", href: "#services" },
-  { label: "Products", href: "#products" },
-  { label: "About", href: "#about" },
-  { label: "Brands", href: "#brands" },
-  { label: "Contact", href: "#contact" },
-];
+type MenuKey = "products" | "services" | null;
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [menu, setMenu] = useState<MenuKey>(null);
+  const [mobileSub, setMobileSub] = useState<MenuKey>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -30,6 +26,7 @@ export function Header() {
           ? "bg-[var(--navy-deep)]/90 backdrop-blur-md border-b border-white/10"
           : "bg-transparent"
       }`}
+      onMouseLeave={() => setMenu(null)}
     >
       <div className="container-x flex h-16 md:h-20 items-center justify-between">
         <Link to="/" className="flex items-center gap-3">
@@ -40,24 +37,41 @@ export function Header() {
         </Link>
 
         <nav className="hidden lg:flex items-center gap-8">
-          {navItems.map((n) => (
-            <a
-              key={n.href}
-              href={n.href}
-              className="text-sm font-medium text-white/80 hover:text-white transition-colors"
-            >
-              {n.label}
-            </a>
-          ))}
+          <Link to="/" hash="solutions" className="text-sm font-medium text-white/80 hover:text-white transition-colors" onMouseEnter={() => setMenu(null)}>
+            Solutions
+          </Link>
+
+          <div onMouseEnter={() => setMenu("services")} className="relative">
+            <Link to="/services" className="inline-flex items-center gap-1 text-sm font-medium text-white/80 hover:text-white transition-colors">
+              Services <ChevronDown className="h-3 w-3 opacity-70" />
+            </Link>
+          </div>
+
+          <div onMouseEnter={() => setMenu("products")} className="relative">
+            <Link to="/products" className="inline-flex items-center gap-1 text-sm font-medium text-white/80 hover:text-white transition-colors">
+              Products <ChevronDown className="h-3 w-3 opacity-70" />
+            </Link>
+          </div>
+
+          <Link to="/" hash="about" className="text-sm font-medium text-white/80 hover:text-white transition-colors" onMouseEnter={() => setMenu(null)}>
+            About
+          </Link>
+          <Link to="/" hash="brands" className="text-sm font-medium text-white/80 hover:text-white transition-colors" onMouseEnter={() => setMenu(null)}>
+            Brands
+          </Link>
+          <Link to="/" hash="contact" className="text-sm font-medium text-white/80 hover:text-white transition-colors" onMouseEnter={() => setMenu(null)}>
+            Contact
+          </Link>
         </nav>
 
         <div className="hidden lg:flex items-center gap-3">
-          <a
-            href="#contact"
+          <Link
+            to="/"
+            hash="contact"
             className="inline-flex items-center justify-center rounded-sm bg-[var(--steel)] px-5 py-2.5 text-sm font-semibold text-white hover:brightness-110 transition"
           >
             Request Quotation
-          </a>
+          </Link>
         </div>
 
         <button
@@ -69,26 +83,120 @@ export function Header() {
         </button>
       </div>
 
+      {/* Desktop mega-menu */}
+      {menu && (
+        <div
+          className="hidden lg:block absolute inset-x-0 top-full bg-[var(--navy-deep)] border-t border-white/10 shadow-2xl animate-fade-in"
+          onMouseEnter={() => setMenu(menu)}
+        >
+          <div className="container-x py-8">
+            {menu === "products" && (
+              <div className="grid grid-cols-3 gap-2">
+                {productCategories.map((c) => (
+                  <Link
+                    key={c.slug}
+                    to="/products/$category"
+                    params={{ category: c.slug }}
+                    onClick={() => setMenu(null)}
+                    className="group flex items-start gap-4 p-4 hover:bg-white/5 transition-colors border-l-2 border-transparent hover:border-[var(--steel)]"
+                  >
+                    <div className="h-10 w-10 rounded-sm bg-white/5 group-hover:bg-[var(--steel)]/20 flex items-center justify-center shrink-0">
+                      <c.icon className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold text-white">{c.name}</div>
+                      <div className="mt-1 text-xs text-white/60 line-clamp-2">{c.tagline}</div>
+                    </div>
+                  </Link>
+                ))}
+                <div className="col-span-3 mt-2 pt-4 border-t border-white/10">
+                  <Link to="/products" onClick={() => setMenu(null)} className="text-xs font-semibold uppercase tracking-wider text-[var(--steel)] hover:text-white transition-colors">
+                    View all products →
+                  </Link>
+                </div>
+              </div>
+            )}
+
+            {menu === "services" && (
+              <div className="grid grid-cols-2 gap-2">
+                {services.map((s) => (
+                  <Link
+                    key={s.slug}
+                    to="/services/$service"
+                    params={{ service: s.slug }}
+                    onClick={() => setMenu(null)}
+                    className="group flex items-start gap-4 p-4 hover:bg-white/5 transition-colors border-l-2 border-transparent hover:border-[var(--steel)]"
+                  >
+                    <div className="h-10 w-10 rounded-sm bg-white/5 group-hover:bg-[var(--steel)]/20 flex items-center justify-center shrink-0">
+                      <s.icon className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold text-white">{s.name}</div>
+                      <div className="mt-1 text-xs text-white/60 line-clamp-2">{s.tagline}</div>
+                    </div>
+                  </Link>
+                ))}
+                <div className="col-span-2 mt-2 pt-4 border-t border-white/10">
+                  <Link to="/services" onClick={() => setMenu(null)} className="text-xs font-semibold uppercase tracking-wider text-[var(--steel)] hover:text-white transition-colors">
+                    View all services →
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Mobile menu */}
       {open && (
-        <div className="lg:hidden bg-[var(--navy-deep)] border-t border-white/10">
+        <div className="lg:hidden bg-[var(--navy-deep)] border-t border-white/10 max-h-[80vh] overflow-y-auto">
           <div className="container-x py-4 flex flex-col gap-1">
-            {navItems.map((n) => (
-              <a
-                key={n.href}
-                href={n.href}
-                onClick={() => setOpen(false)}
-                className="py-3 text-white/80 hover:text-white border-b border-white/5"
-              >
-                {n.label}
-              </a>
-            ))}
-            <a
-              href="#contact"
+            <Link to="/" hash="solutions" onClick={() => setOpen(false)} className="py-3 text-white/80 hover:text-white border-b border-white/5">Solutions</Link>
+
+            <div className="border-b border-white/5">
+              <button onClick={() => setMobileSub(mobileSub === "services" ? null : "services")} className="w-full flex items-center justify-between py-3 text-white/80">
+                Services <ChevronDown className={`h-4 w-4 transition-transform ${mobileSub === "services" ? "rotate-180" : ""}`} />
+              </button>
+              {mobileSub === "services" && (
+                <div className="pb-3 pl-3 flex flex-col">
+                  <Link to="/services" onClick={() => setOpen(false)} className="py-2 text-xs uppercase tracking-wider text-[var(--steel)]">All services →</Link>
+                  {services.map((s) => (
+                    <Link key={s.slug} to="/services/$service" params={{ service: s.slug }} onClick={() => setOpen(false)} className="py-2 text-sm text-white/70 hover:text-white flex items-center gap-2">
+                      <s.icon className="h-4 w-4" /> {s.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="border-b border-white/5">
+              <button onClick={() => setMobileSub(mobileSub === "products" ? null : "products")} className="w-full flex items-center justify-between py-3 text-white/80">
+                Products <ChevronDown className={`h-4 w-4 transition-transform ${mobileSub === "products" ? "rotate-180" : ""}`} />
+              </button>
+              {mobileSub === "products" && (
+                <div className="pb-3 pl-3 flex flex-col">
+                  <Link to="/products" onClick={() => setOpen(false)} className="py-2 text-xs uppercase tracking-wider text-[var(--steel)]">All products →</Link>
+                  {productCategories.map((c) => (
+                    <Link key={c.slug} to="/products/$category" params={{ category: c.slug }} onClick={() => setOpen(false)} className="py-2 text-sm text-white/70 hover:text-white flex items-center gap-2">
+                      <c.icon className="h-4 w-4" /> {c.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <Link to="/" hash="about" onClick={() => setOpen(false)} className="py-3 text-white/80 hover:text-white border-b border-white/5">About</Link>
+            <Link to="/" hash="brands" onClick={() => setOpen(false)} className="py-3 text-white/80 hover:text-white border-b border-white/5">Brands</Link>
+            <Link to="/" hash="contact" onClick={() => setOpen(false)} className="py-3 text-white/80 hover:text-white border-b border-white/5">Contact</Link>
+
+            <Link
+              to="/"
+              hash="contact"
               onClick={() => setOpen(false)}
               className="mt-3 inline-flex items-center justify-center rounded-sm bg-[var(--steel)] px-5 py-3 text-sm font-semibold text-white"
             >
               Request Quotation
-            </a>
+            </Link>
           </div>
         </div>
       )}
