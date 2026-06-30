@@ -2,7 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { PageShell } from "@/components/site/PageShell";
 import { CategoryHero } from "@/components/site/CategoryHero";
-import { findProduct, productCategories } from "@/data/catalog";
+import { findProduct, productCategories, type ProductCategory } from "@/data/catalog";
 
 export const Route = createFileRoute("/products/$category")({
   loader: ({ params }) => {
@@ -44,7 +44,7 @@ export const Route = createFileRoute("/products/$category")({
 });
 
 function CategoryPage() {
-  const { category: c } = Route.useLoaderData();
+  const { category: c } = Route.useLoaderData() as { category: ProductCategory };
 
   return (
     <PageShell>
