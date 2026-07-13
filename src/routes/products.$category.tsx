@@ -100,6 +100,12 @@ function CategoryPage() {
                   <div className="text-[10px] uppercase tracking-[0.2em] font-semibold text-[var(--steel)]">{f.brand}</div>
                   <h3 className="mt-2 text-lg font-bold text-[var(--navy-deep)]">{f.name}</h3>
                   <div className="mt-1 text-xs text-muted-foreground">{f.highlight}</div>
+                  {f.price && (
+                    <div className="mt-4 rounded-sm bg-[var(--surface)] border border-border px-3 py-2">
+                      <div className="text-lg font-bold text-[var(--navy-deep)]">{f.price}</div>
+                      {f.priceNote && <div className="mt-0.5 text-[11px] text-muted-foreground">{f.priceNote}</div>}
+                    </div>
+                  )}
                   <ul className="mt-5 space-y-2 border-t border-border pt-5">
                     {f.specs.map((s) => (
                       <li key={s} className="flex gap-2 text-sm text-foreground/80">
@@ -109,13 +115,32 @@ function CategoryPage() {
                     ))}
                   </ul>
                 </div>
-                <Link
-                  to="/"
-                  hash="contact"
-                  className="block bg-[var(--navy-deep)] text-white text-sm font-semibold text-center py-3.5 hover:bg-[var(--steel)] transition-colors"
-                >
-                  Request Quotation
-                </Link>
+                {f.price ? (
+                  <div className="grid grid-cols-2 border-t border-border">
+                    <Link
+                      to="/"
+                      hash="contact"
+                      className="block bg-[var(--steel)] text-white text-xs font-semibold text-center py-3.5 hover:brightness-110 transition"
+                    >
+                      Buy 1 License
+                    </Link>
+                    <Link
+                      to="/"
+                      hash="contact"
+                      className="block bg-[var(--navy-deep)] text-white text-xs font-semibold text-center py-3.5 hover:bg-black transition-colors"
+                    >
+                      Quote for 2+
+                    </Link>
+                  </div>
+                ) : (
+                  <Link
+                    to="/"
+                    hash="contact"
+                    className="block bg-[var(--navy-deep)] text-white text-sm font-semibold text-center py-3.5 hover:bg-[var(--steel)] transition-colors"
+                  >
+                    Request Quotation
+                  </Link>
+                )}
               </div>
             ))}
           </div>
