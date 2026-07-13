@@ -128,8 +128,8 @@ function ServicePage() {
             <p className="mt-3 text-white/70 max-w-xl">Share your scope — site count, devices, timelines. We respond with a written proposal and indicative quotation within one business day.</p>
           </div>
           <Link
-            to="/"
-            hash="contact"
+            to="/quote"
+            search={{ type: "service", service: s.slug }}
             className="inline-flex items-center gap-2 rounded-sm bg-[var(--steel)] px-7 py-4 text-sm font-semibold text-white hover:brightness-110 transition w-fit"
           >
             Request Consultation <ArrowRight className="h-4 w-4" />

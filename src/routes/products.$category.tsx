@@ -118,15 +118,15 @@ function CategoryPage() {
                 {f.price ? (
                   <div className="grid grid-cols-2 border-t border-border">
                     <Link
-                      to="/"
-                      hash="contact"
+                      to="/quote"
+                      search={{ type: "product", category: c.slug, item: f.name, intent: "buy", qty: "1" }}
                       className="block bg-[var(--steel)] text-white text-xs font-semibold text-center py-3.5 hover:brightness-110 transition"
                     >
                       Buy 1 License
                     </Link>
                     <Link
-                      to="/"
-                      hash="contact"
+                      to="/quote"
+                      search={{ type: "product", category: c.slug, item: f.name, intent: "quote" }}
                       className="block bg-[var(--navy-deep)] text-white text-xs font-semibold text-center py-3.5 hover:bg-black transition-colors"
                     >
                       Quote for 2+
@@ -134,8 +134,8 @@ function CategoryPage() {
                   </div>
                 ) : (
                   <Link
-                    to="/"
-                    hash="contact"
+                    to="/quote"
+                    search={{ type: "product", category: c.slug, item: f.name }}
                     className="block bg-[var(--navy-deep)] text-white text-sm font-semibold text-center py-3.5 hover:bg-[var(--steel)] transition-colors"
                   >
                     Request Quotation
@@ -175,8 +175,8 @@ function CategoryPage() {
             <p className="mt-3 text-white/70 max-w-xl">Send your requirement — quantity, configuration and delivery window. We respond with a detailed quotation within one business day.</p>
           </div>
           <Link
-            to="/"
-            hash="contact"
+            to="/quote"
+            search={{ type: "product", category: c.slug }}
             className="inline-flex items-center gap-2 rounded-sm bg-[var(--steel)] px-7 py-4 text-sm font-semibold text-white hover:brightness-110 transition w-fit"
           >
             Request Quotation <ArrowRight className="h-4 w-4" />
