@@ -1,9 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { ArrowLeft, CheckCircle2, Send } from "lucide-react";
 import { z } from "zod";
 import { PageShell } from "@/components/site/PageShell";
-import { findProduct, findService } from "@/data/catalog";
+import { findProduct, findService, type FeaturedItem } from "@/data/catalog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -44,6 +44,16 @@ function QuotePage() {
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  // Selection state — used when the visitor lands on a category page
+  // and can pick from the whole model list (or specify a custom item).
+  const CUSTOM = "__custom__";
+  const [selectedItem, setSelectedItem] = useState<string>(search.item ?? "");
+  const [customName, setCustomName] = useState("");
+
+  useEffect(() => {
+    setSelectedItem(search.item ?? "");
+  }, [search.item]);
+
   const context = useMemo(() => {
     if (search.type === "service" && search.service) {
       const s = findService(search.service);
@@ -58,30 +68,55 @@ function QuotePage() {
         lineLabel: "Scope items — tick / edit what you need",
         reqType: mapServiceReqType(s.slug),
         productLine: s.name,
+        category: null as null | { slug: string; name: string; items: FeaturedItem[] },
       };
     }
     if (search.type === "product" && search.category) {
       const c = findProduct(search.category);
       if (!c) return null;
-      const item = search.item ? c.featured.find((f) => f.name === search.item) : undefined;
+      const isCustom = selectedItem === CUSTOM;
+      const item =
+        !isCustom && selectedItem
+          ? c.featured.find((f) => f.name === selectedItem)
+          : undefined;
+
+      const title = isCustom
+        ? customName.trim() || `Custom ${c.shortName.toLowerCase()} request`
+        : item
+          ? `${item.brand} ${item.name}`
+          : c.name;
+
       return {
         kind: "product" as const,
-        title: item ? `${item.brand} ${item.name}` : c.name,
+        title,
         eyebrow: item ? `${c.name} · ${item.brand}` : c.name,
         breadcrumb: { label: c.name, to: `/products/${c.slug}` as const, back: "/products" as const },
-        summary: item?.highlight ?? c.tagline,
+        summary: isCustom
+          ? `Tell us the exact ${c.shortName.toLowerCase()} model or configuration you need — we'll source it and quote back.`
+          : item?.highlight ?? c.tagline,
         lines: item?.specs ?? [],
         lineLabel: item ? "Configuration — edit any line to request a change" : "",
         reqType: "IT Hardware Supply",
-        productLine: item ? `${item.brand} ${item.name}` : c.name,
+        productLine: isCustom
+          ? `${c.name} — custom: ${customName.trim() || "(model to be specified)"}`
+          : item
+            ? `${item.brand} ${item.name}`
+            : c.name,
         price: item?.price,
         priceNote: item?.priceNote,
+        category: { slug: c.slug, name: c.name, items: c.featured },
+        isCustom,
       };
     }
     return null;
-  }, [search]);
+  }, [search, selectedItem, customName]);
 
   const [specs, setSpecs] = useState<string[]>(context?.lines ?? []);
+
+  // Re-sync editable specs whenever the selected item changes.
+  useEffect(() => {
+    setSpecs(context?.lines ?? []);
+  }, [context?.title]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -179,6 +214,41 @@ function QuotePage() {
             <div className="rounded-sm border border-border bg-white p-6 md:p-8 sticky top-24">
               <div className="text-[10px] uppercase tracking-[0.25em] text-[var(--steel)] font-semibold">You are quoting</div>
               <h2 className="mt-2 text-xl font-bold text-[var(--navy-deep)]">{context.title}</h2>
+
+              {context.kind === "product" && context.category && (
+                <div className="mt-5">
+                  <label className="text-[10px] uppercase tracking-[0.25em] text-[var(--steel)] font-semibold">
+                    Pick a model from {context.category.name}
+                  </label>
+                  <select
+                    value={selectedItem}
+                    onChange={(e) => setSelectedItem(e.target.value)}
+                    className="mt-2 w-full rounded-sm border border-border bg-white px-3 py-2.5 text-sm text-[var(--navy-deep)] focus:outline-none focus:ring-2 focus:ring-[var(--steel)]"
+                  >
+                    <option value="">— General enquiry —</option>
+                    {context.category.items.map((f) => (
+                      <option key={f.name} value={f.name}>
+                        {f.brand} — {f.name}
+                        {f.price ? ` · ${f.price}` : ""}
+                      </option>
+                    ))}
+                    <option value={CUSTOM}>Other model / custom configuration…</option>
+                  </select>
+
+                  {context.isCustom && (
+                    <input
+                      value={customName}
+                      onChange={(e) => setCustomName(e.target.value)}
+                      placeholder={`e.g. Dell XPS 15 9530, i9 / 64 GB / 2 TB`}
+                      className="mt-3 w-full rounded-sm border border-border bg-white px-3 py-2.5 text-sm text-[var(--navy-deep)] focus:outline-none focus:ring-2 focus:ring-[var(--steel)]"
+                    />
+                  )}
+                  <p className="mt-2 text-[11px] text-muted-foreground">
+                    Don't see what you need? Pick "Other" and describe the exact model — we'll source and quote it.
+                  </p>
+                </div>
+              )}
+
               {"price" in context && context.price && (
                 <div className="mt-4 rounded-sm bg-[var(--surface)] border border-border px-4 py-3">
                   <div className="text-lg font-bold text-[var(--navy-deep)]">{context.price}</div>
