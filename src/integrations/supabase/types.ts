@@ -56,6 +56,173 @@ export type Database = {
         }
         Relationships: []
       }
+      product_categories: {
+        Row: {
+          brands: Json
+          created_at: string
+          icon: string
+          image_url: string | null
+          intro: string
+          name: string
+          short_name: string
+          slug: string
+          sort_order: number
+          tagline: string
+          updated_at: string
+          use_cases: Json
+        }
+        Insert: {
+          brands?: Json
+          created_at?: string
+          icon?: string
+          image_url?: string | null
+          intro?: string
+          name: string
+          short_name: string
+          slug: string
+          sort_order?: number
+          tagline?: string
+          updated_at?: string
+          use_cases?: Json
+        }
+        Update: {
+          brands?: Json
+          created_at?: string
+          icon?: string
+          image_url?: string | null
+          intro?: string
+          name?: string
+          short_name?: string
+          slug?: string
+          sort_order?: number
+          tagline?: string
+          updated_at?: string
+          use_cases?: Json
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          billing_period: string | null
+          brand: string
+          category_slug: string
+          created_at: string
+          description: string
+          featured: boolean
+          highlight: string
+          id: string
+          image_url: string | null
+          in_stock: boolean
+          max_months: number | null
+          min_months: number | null
+          name: string
+          price: string | null
+          price_note: string | null
+          sort_order: number
+          specs: Json
+          stock: number
+          updated_at: string
+        }
+        Insert: {
+          billing_period?: string | null
+          brand?: string
+          category_slug: string
+          created_at?: string
+          description?: string
+          featured?: boolean
+          highlight?: string
+          id?: string
+          image_url?: string | null
+          in_stock?: boolean
+          max_months?: number | null
+          min_months?: number | null
+          name: string
+          price?: string | null
+          price_note?: string | null
+          sort_order?: number
+          specs?: Json
+          stock?: number
+          updated_at?: string
+        }
+        Update: {
+          billing_period?: string | null
+          brand?: string
+          category_slug?: string
+          created_at?: string
+          description?: string
+          featured?: boolean
+          highlight?: string
+          id?: string
+          image_url?: string | null
+          in_stock?: boolean
+          max_months?: number | null
+          min_months?: number | null
+          name?: string
+          price?: string | null
+          price_note?: string | null
+          sort_order?: number
+          specs?: Json
+          stock?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_slug_fkey"
+            columns: ["category_slug"]
+            isOneToOne: false
+            referencedRelation: "product_categories"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
+      services: {
+        Row: {
+          created_at: string
+          icon: string
+          image_url: string | null
+          included: Json
+          industries: Json
+          intro: string
+          name: string
+          process: Json
+          short_name: string
+          slug: string
+          sort_order: number
+          tagline: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          icon?: string
+          image_url?: string | null
+          included?: Json
+          industries?: Json
+          intro?: string
+          name: string
+          process?: Json
+          short_name: string
+          slug: string
+          sort_order?: number
+          tagline?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          icon?: string
+          image_url?: string | null
+          included?: Json
+          industries?: Json
+          intro?: string
+          name?: string
+          process?: Json
+          short_name?: string
+          slug?: string
+          sort_order?: number
+          tagline?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
