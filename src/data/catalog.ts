@@ -1,4 +1,4 @@
-import { Laptop, Server, Router, Camera, Printer, Keyboard, Video, Network, Wrench, Building2 } from "lucide-react";
+import { Laptop, Server, Router, Camera, Printer, Keyboard, Video, Network, Wrench, Building2, AppWindow } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import laptopsImg from "@/assets/products/laptops-desktops.jpg";
@@ -7,6 +7,7 @@ import networkingImg from "@/assets/products/networking.jpg";
 import camerasImg from "@/assets/products/cameras.jpg";
 import printersImg from "@/assets/products/printers.jpg";
 import accessoriesImg from "@/assets/products/accessories.jpg";
+import softwareImg from "@/assets/products/software.jpg";
 
 import cctvSvc from "@/assets/services/cctv.jpg";
 import netSvc from "@/assets/services/networking.jpg";
@@ -18,6 +19,8 @@ export type FeaturedItem = {
   brand: string;
   highlight: string;
   specs: string[];
+  price?: string;
+  priceNote?: string;
 };
 
 export type ProductCategory = {
@@ -184,6 +187,37 @@ export const productCategories: ProductCategory[] = [
       { name: "Smart-UPS SRT 3000VA", brand: "APC", highlight: "Online double-conversion UPS", specs: ["3000 VA / 2700 W", "Pure sine wave", "LCD + network mgmt", "Rack / tower"] },
       { name: "Back-UPS Pro BR1500MS", brand: "APC", highlight: "Workstation UPS", specs: ["1500 VA / 900 W", "AVR voltage regulation", "USB charging", "LCD status"] },
       { name: "DataTraveler Max 256 GB", brand: "Kingston", highlight: "USB-C flash drive", specs: ["USB 3.2 Gen 2", "1,000 MB/s read", "Cap-less design", "5-year warranty"] },
+    ],
+  },
+  {
+    slug: "software",
+    name: "Software & Licensing",
+    shortName: "Software",
+    icon: AppWindow,
+    image: softwareImg,
+    tagline: "Genuine Microsoft & Adobe licenses — single seats or volume.",
+    intro:
+      "Authorized supply of Microsoft 365, Windows, Windows Server and Adobe Creative Cloud / Acrobat licenses. Buy a single license at list price, or request a volume quotation for 2 or more seats with tiered discounts.",
+    brands: ["Microsoft", "Adobe"],
+    useCases: [
+      "Single-user license purchase",
+      "Volume licensing for teams (2+ seats)",
+      "Corporate Microsoft 365 rollouts",
+      "Creative team Adobe Creative Cloud plans",
+    ],
+    featured: [
+      { name: "Microsoft 365 Business Standard", brand: "Microsoft", highlight: "Office apps + Teams + 1 TB OneDrive", specs: ["Word, Excel, PowerPoint, Outlook", "Microsoft Teams & SharePoint", "1 TB OneDrive per user", "Web + desktop + mobile apps"], price: "$150 / user / year", priceNote: "Single seat. 2+ seats: request quotation." },
+      { name: "Microsoft 365 Business Premium", brand: "Microsoft", highlight: "Business Standard + advanced security", specs: ["Everything in Business Standard", "Intune device management", "Defender for Business", "Information protection"], price: "$264 / user / year", priceNote: "Single seat. 2+ seats: request quotation." },
+      { name: "Microsoft 365 Apps for Business", brand: "Microsoft", highlight: "Desktop Office apps only", specs: ["Word, Excel, PowerPoint, Outlook", "1 TB OneDrive per user", "Install on 5 PCs / Macs", "No Teams / Exchange"], price: "$99 / user / year", priceNote: "Single seat. 2+ seats: request quotation." },
+      { name: "Windows 11 Pro", brand: "Microsoft", highlight: "Perpetual OEM / retail license", specs: ["Domain join & Group Policy", "BitLocker encryption", "Hyper-V virtualization", "Windows Update for Business"], price: "$199 one-time", priceNote: "Single license. Bulk: request quotation." },
+      { name: "Windows Server 2022 Standard", brand: "Microsoft", highlight: "Server OS — 16 core license", specs: ["16 core base license", "2 OSEs / Hyper-V containers", "CALs sold separately", "Perpetual license"], price: "$1,069 one-time", priceNote: "Excl. CALs. Bulk / with CALs: request quotation." },
+      { name: "Microsoft 365 E3", brand: "Microsoft", highlight: "Enterprise plan with EMS", specs: ["Full Office desktop apps", "Enterprise Mobility + Security", "Azure AD Premium P1", "Advanced compliance"], price: "$432 / user / year", priceNote: "Single seat. Enterprise volume: request quotation." },
+      { name: "Adobe Creative Cloud All Apps — Teams", brand: "Adobe", highlight: "20+ creative apps for teams", specs: ["Photoshop, Illustrator, Premiere Pro", "InDesign, After Effects, Lightroom", "100 GB cloud storage", "Admin console + license reassign"], price: "$1,080 / license / year", priceNote: "Single license. 2+ licenses: request quotation." },
+      { name: "Adobe Creative Cloud Pro — Teams", brand: "Adobe", highlight: "All Apps + Firefly Pro + Substance", specs: ["Everything in All Apps", "Firefly generative AI (Pro credits)", "Substance 3D collection", "Priority support"], price: "$1,200 / license / year", priceNote: "Single license. 2+ licenses: request quotation." },
+      { name: "Adobe Acrobat Pro — Teams", brand: "Adobe", highlight: "PDF editing, e-sign & collaboration", specs: ["Edit, convert, export PDFs", "E-signatures (Adobe Sign)", "Redaction & protection", "Admin console management"], price: "$288 / license / year", priceNote: "Single license. 2+ licenses: request quotation." },
+      { name: "Adobe Photoshop — Teams (Single App)", brand: "Adobe", highlight: "Photoshop only for teams", specs: ["Photoshop desktop + iPad", "100 GB cloud storage", "Adobe Fonts included", "Admin console"], price: "$456 / license / year", priceNote: "Single license. 2+ licenses: request quotation." },
+      { name: "Adobe Illustrator — Teams (Single App)", brand: "Adobe", highlight: "Vector design for teams", specs: ["Illustrator desktop + iPad", "100 GB cloud storage", "Adobe Fonts included", "Admin console"], price: "$456 / license / year", priceNote: "Single license. 2+ licenses: request quotation." },
+      { name: "Adobe Substance 3D Collection — Teams", brand: "Adobe", highlight: "3D texturing, modelling & rendering", specs: ["Painter, Designer, Sampler, Stager", "Modeler & 3D Assets", "100 GB cloud storage", "Admin console"], price: "$1,200 / license / year", priceNote: "Single license. 2+ licenses: request quotation." },
     ],
   },
 ];
