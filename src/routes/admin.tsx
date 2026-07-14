@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { LayoutGrid, Package, Layers, Wrench, Plus, Pencil, Trash2, X, Search, Upload } from "lucide-react";
+import { LayoutGrid, Package, Layers, Wrench, Plus, Pencil, Trash2, X, Search, Upload, ChevronLeft, FolderOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -71,6 +71,7 @@ function ProductsPanel() {
   const [q, setQ] = useState("");
   const [editing, setEditing] = useState<Partial<Product> | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedCat, setSelectedCat] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
@@ -87,6 +88,11 @@ function ProductsPanel() {
   useEffect(() => { load(); }, []);
 
   const filtered = useMemo(() => rows.filter(r => !q || r.name.toLowerCase().includes(q.toLowerCase()) || r.brand.toLowerCase().includes(q.toLowerCase())), [rows, q]);
+  const scoped = useMemo(
+    () => (selectedCat ? filtered.filter((r) => r.category_slug === selectedCat) : filtered),
+    [filtered, selectedCat],
+  );
+  const currentCat = selectedCat ? cats.find((c) => c.slug === selectedCat) : null;
 
   async function del(id: string) {
     if (!confirm("Delete this product?")) return;
@@ -95,15 +101,68 @@ function ProductsPanel() {
     toast.success("Deleted"); load();
   }
 
+  // Category-first view: no category selected → show category tiles.
+  if (!selectedCat) {
+    const counts = new Map<string, number>();
+    rows.forEach((r) => counts.set(r.category_slug, (counts.get(r.category_slug) ?? 0) + 1));
+    return (
+      <div className="rounded-md bg-[#0b1428] border border-white/5 p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-lg font-bold">Choose a category</h2>
+            <p className="text-sm text-white/50 mt-1">Click a category to manage only its products.</p>
+          </div>
+        </div>
+        {loading ? (
+          <div className="py-10 text-center text-white/40 text-sm">Loading…</div>
+        ) : cats.length === 0 ? (
+          <div className="py-10 text-center text-white/40 text-sm">No categories yet. Add one from the Categories tab.</div>
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {cats.map((c) => (
+              <button
+                key={c.slug}
+                onClick={() => setSelectedCat(c.slug)}
+                className="group text-left rounded-md bg-[#050914]/60 border border-white/10 hover:border-sky-500/40 hover:bg-[#050914] transition p-5"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="h-11 w-11 rounded-md bg-sky-500/10 border border-sky-500/30 flex items-center justify-center shrink-0">
+                    <FolderOpen className="h-5 w-5 text-sky-400" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-semibold truncate">{c.name}</div>
+                    <div className="text-xs text-white/50 mt-0.5 truncate">{c.tagline || `/${c.slug}`}</div>
+                    <div className="mt-3 inline-flex text-[11px] px-2 py-1 rounded bg-white/5 border border-white/10 text-white/70">
+                      {counts.get(c.slug) ?? 0} product{(counts.get(c.slug) ?? 0) === 1 ? "" : "s"}
+                    </div>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="rounded-md bg-[#0b1428] border border-white/5 p-6">
+        <div className="flex items-center justify-between mb-5">
+          <button onClick={() => { setSelectedCat(null); setQ(""); }} className="inline-flex items-center gap-2 text-sm text-white/70 hover:text-white">
+            <ChevronLeft className="h-4 w-4" /> All categories
+          </button>
+          <div className="text-sm">
+            <span className="text-white/40">Category:</span>{" "}
+            <span className="font-semibold text-white">{currentCat?.name ?? selectedCat}</span>
+          </div>
+        </div>
         <div className="flex items-center gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
             <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search products…" className="w-full bg-[#050914] border border-white/10 rounded-md pl-10 pr-4 py-3 text-sm" />
           </div>
-          <button onClick={() => setEditing({ category_slug: cats[0]?.slug ?? "", specs: [], in_stock: true, stock: 0, featured: false, sort_order: 0 })} className="inline-flex items-center gap-2 bg-sky-500 hover:bg-sky-400 text-white rounded-md px-5 py-3 text-sm font-semibold">
+          <button onClick={() => setEditing({ category_slug: selectedCat, specs: [], in_stock: true, stock: 0, featured: false, sort_order: 0 })} className="inline-flex items-center gap-2 bg-sky-500 hover:bg-sky-400 text-white rounded-md px-5 py-3 text-sm font-semibold">
             <Plus className="h-4 w-4" /> Add Product
           </button>
         </div>
@@ -112,9 +171,9 @@ function ProductsPanel() {
           <div>Product</div><div>Price</div><div>Category</div><div>Stock</div><div>Featured</div><div className="text-right">Actions</div>
         </div>
 
-        {loading ? <div className="py-10 text-center text-white/40 text-sm">Loading…</div> : filtered.length === 0 ? <div className="py-10 text-center text-white/40 text-sm">No products. Click Add Product.</div> : (
+        {loading ? <div className="py-10 text-center text-white/40 text-sm">Loading…</div> : scoped.length === 0 ? <div className="py-10 text-center text-white/40 text-sm">No products in this category yet. Click Add Product.</div> : (
           <div className="divide-y divide-white/5">
-            {filtered.map((r) => (
+            {scoped.map((r) => (
               <div key={r.id} className="grid grid-cols-[minmax(220px,2fr)_120px_180px_140px_100px_80px] gap-4 items-center px-3 py-4">
                 <div className="flex items-center gap-3">
                   <div className="h-12 w-12 rounded bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
