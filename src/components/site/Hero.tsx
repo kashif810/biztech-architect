@@ -53,7 +53,7 @@ export function Hero() {
         </div>
       ))}
 
-      <div className="relative container-x pt-36 md:pt-44 pb-24 md:pb-32 min-h-[720px] md:min-h-[780px] flex flex-col justify-center">
+      <div className="relative container-x pt-24 sm:pt-28 md:pt-44 pb-16 md:pb-32 min-h-[560px] sm:min-h-[620px] md:min-h-[780px] flex flex-col justify-center">
         <div className="max-w-3xl">
           {slides.map((s, idx) => (
             <div
@@ -65,38 +65,38 @@ export function Hero() {
               <span className="eyebrow text-white/70">
                 <span className="h-px w-8 bg-[var(--steel)]" /> {s.eyebrow}
               </span>
-              <h1 className="mt-5 text-4xl md:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight">
+              <h1 className="mt-4 text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight">
                 {s.title}
               </h1>
-              <p className="mt-6 text-base md:text-lg text-white/75 max-w-2xl leading-relaxed">
+              <p className="mt-4 sm:mt-6 text-sm sm:text-base md:text-lg text-white/75 max-w-2xl leading-relaxed">
                 {s.sub}
               </p>
             </div>
           ))}
 
-          <div className="mt-10 flex flex-wrap gap-3">
+          <div className="mt-6 sm:mt-10 flex flex-wrap gap-2 sm:gap-3">
             <a
               href="#solutions"
-              className="inline-flex items-center gap-2 rounded-sm bg-[var(--steel)] px-6 py-3.5 text-sm font-semibold text-white hover:brightness-110 transition"
+              className="inline-flex items-center gap-2 rounded-sm bg-[var(--steel)] px-4 sm:px-6 py-3 sm:py-3.5 text-xs sm:text-sm font-semibold text-white hover:brightness-110 transition"
             >
               Explore Solutions <ArrowRight className="h-4 w-4" />
             </a>
             <a
               href="#contact"
-              className="inline-flex items-center gap-2 rounded-sm border border-white/30 bg-white/5 px-6 py-3.5 text-sm font-semibold text-white hover:bg-white/10 transition"
+              className="inline-flex items-center gap-2 rounded-sm border border-white/30 bg-white/5 px-4 sm:px-6 py-3 sm:py-3.5 text-xs sm:text-sm font-semibold text-white hover:bg-white/10 transition"
             >
               Request Quotation
             </a>
             <a
               href="#profile"
-              className="inline-flex items-center gap-2 rounded-sm px-6 py-3.5 text-sm font-semibold text-white/80 hover:text-white transition"
+              className="inline-flex items-center gap-2 rounded-sm px-4 sm:px-6 py-3 sm:py-3.5 text-xs sm:text-sm font-semibold text-white/80 hover:text-white transition"
             >
               <FileText className="h-4 w-4" /> Company Profile
             </a>
           </div>
         </div>
 
-        <div className="mt-16 flex items-center gap-3">
+        <div className="mt-8 sm:mt-16 flex items-center gap-3">
           {slides.map((_, idx) => (
             <button
               key={idx}
