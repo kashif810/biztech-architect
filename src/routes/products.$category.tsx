@@ -3,7 +3,6 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { PageShell } from "@/components/site/PageShell";
 import { CategoryHero } from "@/components/site/CategoryHero";
 import { findProduct, productCategories, type ProductCategory } from "@/data/catalog";
-import { useLiveCategory, useLiveProducts } from "@/hooks/useLiveCatalog";
 
 export const Route = createFileRoute("/products/$category")({
   loader: ({ params }) => {
@@ -46,41 +45,18 @@ export const Route = createFileRoute("/products/$category")({
 
 function CategoryPage() {
   const { category: c } = Route.useLoaderData() as { category: ProductCategory };
-  const liveCat = useLiveCategory(c.slug);
-  const liveProducts = useLiveProducts(c.slug);
-
-  // Overlay DB data on top of static defaults so admin edits reflect live.
-  const name = liveCat?.name ?? c.name;
-  const tagline = liveCat?.tagline || c.tagline;
-  const intro = liveCat?.intro || c.intro;
-  const brands = (liveCat?.brands?.length ? liveCat.brands : c.brands);
-  const useCases = (liveCat?.use_cases?.length ? liveCat.use_cases : c.useCases);
-  const image = liveCat?.image_url || c.image;
-
-  // If we have DB products, use them; otherwise fall back to static featured list.
-  const featured = liveProducts && liveProducts.length > 0
-    ? liveProducts.map((p) => ({
-        name: p.name,
-        brand: p.brand,
-        highlight: p.highlight,
-        specs: p.specs ?? [],
-        price: p.price ?? undefined,
-        priceNote: p.price_note ?? undefined,
-        image_url: p.image_url,
-      }))
-    : c.featured.map((f) => ({ ...f, image_url: null as string | null }));
 
   return (
     <PageShell>
       <CategoryHero
         eyebrow="Product Category"
-        title={name}
-        tagline={tagline}
-        image={image}
+        title={c.name}
+        tagline={c.tagline}
+        image={c.image}
         breadcrumb={[
           { label: "Home", to: "/" },
           { label: "Products", to: "/products" },
-          { label: name, to: `/products/${c.slug}` },
+          { label: c.name, to: `/products/${c.slug}` },
         ]}
       />
 
@@ -89,12 +65,12 @@ function CategoryPage() {
         <div className="container-x grid md:grid-cols-3 gap-12">
           <div className="md:col-span-2">
             <span className="eyebrow"><span className="h-px w-8 bg-[var(--steel)]" /> Overview</span>
-            <p className="mt-5 text-lg text-[var(--navy-deep)] leading-relaxed">{intro}</p>
+            <p className="mt-5 text-lg text-[var(--navy-deep)] leading-relaxed">{c.intro}</p>
           </div>
           <div>
             <div className="text-[10px] uppercase tracking-[0.2em] font-semibold text-[var(--steel)]">Brands we supply</div>
             <ul className="mt-4 space-y-2">
-              {brands.map((b) => (
+              {c.brands.map((b) => (
                 <li key={b} className="flex items-center gap-3 text-sm text-[var(--navy-deep)] font-medium border-b border-border pb-2">
                   <span className="h-1 w-3 bg-[var(--steel)]" /> {b}
                 </li>
@@ -118,13 +94,8 @@ function CategoryPage() {
           </div>
 
           <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featured.map((f) => (
+            {c.featured.map((f) => (
               <div key={f.name} className="flex flex-col bg-white border border-border hover:border-[var(--steel)] transition-colors">
-                {f.image_url && (
-                  <div className="aspect-[4/3] overflow-hidden bg-[var(--surface)]">
-                    <img src={f.image_url} alt={f.name} loading="lazy" className="h-full w-full object-cover" />
-                  </div>
-                )}
                 <div className="p-7 flex-1">
                   <div className="text-[10px] uppercase tracking-[0.2em] font-semibold text-[var(--steel)]">{f.brand}</div>
                   <h3 className="mt-2 text-lg font-bold text-[var(--navy-deep)]">{f.name}</h3>
@@ -186,7 +157,7 @@ function CategoryPage() {
             </h2>
           </div>
           <ul className="space-y-4">
-            {useCases.map((u) => (
+            {c.useCases.map((u) => (
               <li key={u} className="flex items-start gap-4 p-5 bg-[var(--surface)] border-l-2 border-[var(--steel)]">
                 <CheckCircle2 className="h-5 w-5 text-[var(--steel)] shrink-0 mt-0.5" />
                 <span className="text-[var(--navy-deep)] font-medium">{u}</span>
