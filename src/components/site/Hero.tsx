@@ -53,7 +53,7 @@ export function Hero() {
         </div>
       ))}
 
-      <div className="relative container-x pt-24 sm:pt-28 md:pt-44 pb-16 md:pb-32 min-h-[560px] sm:min-h-[620px] md:min-h-[780px] flex flex-col justify-center">
+      <div className="relative container-x pt-24 sm:pt-28 md:pt-32 pb-12 md:pb-20 min-h-[560px] sm:min-h-[620px] md:min-h-[640px] flex flex-col justify-center">
         <div className="max-w-3xl">
           {slides.map((s, idx) => (
             <div
@@ -65,7 +65,7 @@ export function Hero() {
               <span className="eyebrow text-white/70">
                 <span className="h-px w-8 bg-[var(--steel)]" /> {s.eyebrow}
               </span>
-              <h1 className="mt-4 text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight">
+              <h1 className="mt-4 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight">
                 {s.title}
               </h1>
               <p className="mt-4 sm:mt-6 text-sm sm:text-base md:text-lg text-white/75 max-w-2xl leading-relaxed">

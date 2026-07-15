@@ -1,5 +1,7 @@
 import { Download, FileText } from "lucide-react";
-import profile from "@/assets/company-profile.pdf.asset.json";
+
+const PROFILE_URL = "/Evertech-Corporation-Profile.pdf";
+const PROFILE_SIZE = 759653;
 
 export function Profile() {
   return (
@@ -19,14 +21,14 @@ export function Profile() {
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <a
-                  href={profile.url}
+                  href={PROFILE_URL}
                   download
                   className="inline-flex items-center gap-2 rounded-sm bg-[var(--steel)] px-6 py-3.5 text-sm font-semibold text-white hover:brightness-110 transition"
                 >
                   <Download className="h-4 w-4" /> Download Profile (PDF)
                 </a>
                 <a
-                  href={profile.url}
+                  href={PROFILE_URL}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-2 rounded-sm border border-white/30 px-6 py-3.5 text-sm font-semibold text-white hover:bg-white/10 transition"
@@ -43,7 +45,7 @@ export function Profile() {
                 <div className="mt-1 text-2xl font-bold font-display leading-tight">Evertech Corporation</div>
                 <div className="text-sm text-muted-foreground">Company Profile · 2025</div>
                 <div className="mt-auto pt-6 border-t border-border text-xs text-muted-foreground flex items-center justify-between">
-                  <span>PDF · {(profile.size / 1024 / 1024).toFixed(1)} MB</span>
+                  <span>PDF · {(PROFILE_SIZE / 1024 / 1024).toFixed(1)} MB</span>
                   <span className="text-[var(--steel)] font-semibold">CONFIDENTIAL</span>
                 </div>
               </div>
