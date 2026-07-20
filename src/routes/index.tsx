@@ -10,15 +10,27 @@ import { Profile } from "@/components/site/Profile";
 import { Brands } from "@/components/site/Brands";
 import { Contact } from "@/components/site/Contact";
 import { Footer } from "@/components/site/Footer";
+import { getRequestOrigin } from "@/lib/origin.functions";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
+  loader: async () => {
+    const origin = await getRequestOrigin();
+    return { origin };
+  },
+  head: ({ loaderData }) => ({
     meta: [
       { title: "Evertech Corporation — Enterprise IT Solutions, Networking & Surveillance" },
       { name: "description", content: "Trusted enterprise IT vendor since 2001. Official Dell & Lenovo partner delivering infrastructure, networking, IP surveillance and corporate hardware procurement across Pakistan." },
       { property: "og:title", content: "Evertech Corporation — Enterprise IT Solutions" },
       { property: "og:description", content: "Enterprise infrastructure, networking, surveillance and corporate hardware supply. Request a quotation today." },
+      { property: "og:image", content: `${loaderData.origin}/og-image.png` },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "640" },
+      { property: "og:url", content: `${loaderData.origin}/` },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: `${loaderData.origin}/og-image.png` },
     ],
+    links: [{ rel: "canonical", href: `${loaderData.origin}/` }],
   }),
   component: Index,
 });
