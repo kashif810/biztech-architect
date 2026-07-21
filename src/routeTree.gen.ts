@@ -13,11 +13,16 @@ import { Route as ServicesRouteImport } from './routes/services'
 import { Route as QuoteRouteImport } from './routes/quote'
 import { Route as ProductsRouteImport } from './routes/products'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AccountingRouteImport } from './routes/accounting'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ServicesIndexRouteImport } from './routes/services.index'
 import { Route as ProductsIndexRouteImport } from './routes/products.index'
+import { Route as AccountingIndexRouteImport } from './routes/accounting.index'
 import { Route as ServicesServiceRouteImport } from './routes/services.$service'
 import { Route as ProductsCategoryRouteImport } from './routes/products.$category'
+import { Route as AccountingSuppliersRouteImport } from './routes/accounting.suppliers'
+import { Route as AccountingQuotationsRouteImport } from './routes/accounting.quotations'
+import { Route as AccountingCustomersRouteImport } from './routes/accounting.customers'
 
 const ServicesRoute = ServicesRouteImport.update({
   id: '/services',
@@ -39,6 +44,11 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountingRoute = AccountingRouteImport.update({
+  id: '/accounting',
+  path: '/accounting',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -54,6 +64,11 @@ const ProductsIndexRoute = ProductsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ProductsRoute,
 } as any)
+const AccountingIndexRoute = AccountingIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AccountingRoute,
+} as any)
 const ServicesServiceRoute = ServicesServiceRouteImport.update({
   id: '/$service',
   path: '/$service',
@@ -64,15 +79,35 @@ const ProductsCategoryRoute = ProductsCategoryRouteImport.update({
   path: '/$category',
   getParentRoute: () => ProductsRoute,
 } as any)
+const AccountingSuppliersRoute = AccountingSuppliersRouteImport.update({
+  id: '/suppliers',
+  path: '/suppliers',
+  getParentRoute: () => AccountingRoute,
+} as any)
+const AccountingQuotationsRoute = AccountingQuotationsRouteImport.update({
+  id: '/quotations',
+  path: '/quotations',
+  getParentRoute: () => AccountingRoute,
+} as any)
+const AccountingCustomersRoute = AccountingCustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
+  getParentRoute: () => AccountingRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/accounting': typeof AccountingRouteWithChildren
   '/admin': typeof AdminRoute
   '/products': typeof ProductsRouteWithChildren
   '/quote': typeof QuoteRoute
   '/services': typeof ServicesRouteWithChildren
+  '/accounting/customers': typeof AccountingCustomersRoute
+  '/accounting/quotations': typeof AccountingQuotationsRoute
+  '/accounting/suppliers': typeof AccountingSuppliersRoute
   '/products/$category': typeof ProductsCategoryRoute
   '/services/$service': typeof ServicesServiceRoute
+  '/accounting/': typeof AccountingIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/services/': typeof ServicesIndexRoute
 }
@@ -80,20 +115,29 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/quote': typeof QuoteRoute
+  '/accounting/customers': typeof AccountingCustomersRoute
+  '/accounting/quotations': typeof AccountingQuotationsRoute
+  '/accounting/suppliers': typeof AccountingSuppliersRoute
   '/products/$category': typeof ProductsCategoryRoute
   '/services/$service': typeof ServicesServiceRoute
+  '/accounting': typeof AccountingIndexRoute
   '/products': typeof ProductsIndexRoute
   '/services': typeof ServicesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/accounting': typeof AccountingRouteWithChildren
   '/admin': typeof AdminRoute
   '/products': typeof ProductsRouteWithChildren
   '/quote': typeof QuoteRoute
   '/services': typeof ServicesRouteWithChildren
+  '/accounting/customers': typeof AccountingCustomersRoute
+  '/accounting/quotations': typeof AccountingQuotationsRoute
+  '/accounting/suppliers': typeof AccountingSuppliersRoute
   '/products/$category': typeof ProductsCategoryRoute
   '/services/$service': typeof ServicesServiceRoute
+  '/accounting/': typeof AccountingIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/services/': typeof ServicesIndexRoute
 }
@@ -101,12 +145,17 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/accounting'
     | '/admin'
     | '/products'
     | '/quote'
     | '/services'
+    | '/accounting/customers'
+    | '/accounting/quotations'
+    | '/accounting/suppliers'
     | '/products/$category'
     | '/services/$service'
+    | '/accounting/'
     | '/products/'
     | '/services/'
   fileRoutesByTo: FileRoutesByTo
@@ -114,25 +163,35 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/quote'
+    | '/accounting/customers'
+    | '/accounting/quotations'
+    | '/accounting/suppliers'
     | '/products/$category'
     | '/services/$service'
+    | '/accounting'
     | '/products'
     | '/services'
   id:
     | '__root__'
     | '/'
+    | '/accounting'
     | '/admin'
     | '/products'
     | '/quote'
     | '/services'
+    | '/accounting/customers'
+    | '/accounting/quotations'
+    | '/accounting/suppliers'
     | '/products/$category'
     | '/services/$service'
+    | '/accounting/'
     | '/products/'
     | '/services/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountingRoute: typeof AccountingRouteWithChildren
   AdminRoute: typeof AdminRoute
   ProductsRoute: typeof ProductsRouteWithChildren
   QuoteRoute: typeof QuoteRoute
@@ -169,6 +228,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/accounting': {
+      id: '/accounting'
+      path: '/accounting'
+      fullPath: '/accounting'
+      preLoaderRoute: typeof AccountingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -190,6 +256,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsIndexRouteImport
       parentRoute: typeof ProductsRoute
     }
+    '/accounting/': {
+      id: '/accounting/'
+      path: '/'
+      fullPath: '/accounting/'
+      preLoaderRoute: typeof AccountingIndexRouteImport
+      parentRoute: typeof AccountingRoute
+    }
     '/services/$service': {
       id: '/services/$service'
       path: '/$service'
@@ -204,8 +277,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsCategoryRouteImport
       parentRoute: typeof ProductsRoute
     }
+    '/accounting/suppliers': {
+      id: '/accounting/suppliers'
+      path: '/suppliers'
+      fullPath: '/accounting/suppliers'
+      preLoaderRoute: typeof AccountingSuppliersRouteImport
+      parentRoute: typeof AccountingRoute
+    }
+    '/accounting/quotations': {
+      id: '/accounting/quotations'
+      path: '/quotations'
+      fullPath: '/accounting/quotations'
+      preLoaderRoute: typeof AccountingQuotationsRouteImport
+      parentRoute: typeof AccountingRoute
+    }
+    '/accounting/customers': {
+      id: '/accounting/customers'
+      path: '/customers'
+      fullPath: '/accounting/customers'
+      preLoaderRoute: typeof AccountingCustomersRouteImport
+      parentRoute: typeof AccountingRoute
+    }
   }
 }
+
+interface AccountingRouteChildren {
+  AccountingCustomersRoute: typeof AccountingCustomersRoute
+  AccountingQuotationsRoute: typeof AccountingQuotationsRoute
+  AccountingSuppliersRoute: typeof AccountingSuppliersRoute
+  AccountingIndexRoute: typeof AccountingIndexRoute
+}
+
+const AccountingRouteChildren: AccountingRouteChildren = {
+  AccountingCustomersRoute: AccountingCustomersRoute,
+  AccountingQuotationsRoute: AccountingQuotationsRoute,
+  AccountingSuppliersRoute: AccountingSuppliersRoute,
+  AccountingIndexRoute: AccountingIndexRoute,
+}
+
+const AccountingRouteWithChildren = AccountingRoute._addFileChildren(
+  AccountingRouteChildren,
+)
 
 interface ProductsRouteChildren {
   ProductsCategoryRoute: typeof ProductsCategoryRoute
@@ -237,6 +349,7 @@ const ServicesRouteWithChildren = ServicesRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountingRoute: AccountingRouteWithChildren,
   AdminRoute: AdminRoute,
   ProductsRoute: ProductsRouteWithChildren,
   QuoteRoute: QuoteRoute,
