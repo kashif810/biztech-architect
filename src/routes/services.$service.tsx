@@ -2,16 +2,16 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { PageShell } from "@/components/site/PageShell";
 import { CategoryHero } from "@/components/site/CategoryHero";
-import { findService, services, type ServiceDetail } from "@/data/catalog";
+import { findService, services } from "@/data/catalog";
 
 export const Route = createFileRoute("/services/$service")({
   loader: ({ params }) => {
     const service = findService(params.service);
     if (!service) throw notFound();
-    return { service };
+    return { slug: service.slug };
   },
   head: ({ loaderData }) => {
-    const s = loaderData?.service;
+    const s = loaderData ? findService(loaderData.slug) : undefined;
     return {
       meta: s
         ? [
@@ -44,7 +44,9 @@ export const Route = createFileRoute("/services/$service")({
 });
 
 function ServicePage() {
-  const { service: s } = Route.useLoaderData() as { service: ServiceDetail };
+  const { slug } = Route.useLoaderData();
+  const s = findService(slug);
+  if (!s) throw notFound();
 
   return (
     <PageShell>
