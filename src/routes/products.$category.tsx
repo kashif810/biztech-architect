@@ -2,16 +2,16 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { PageShell } from "@/components/site/PageShell";
 import { CategoryHero } from "@/components/site/CategoryHero";
-import { findProduct, productCategories, type ProductCategory } from "@/data/catalog";
+import { findProduct, productCategories } from "@/data/catalog";
 
 export const Route = createFileRoute("/products/$category")({
   loader: ({ params }) => {
     const category = findProduct(params.category);
     if (!category) throw notFound();
-    return { category };
+    return { slug: category.slug };
   },
   head: ({ loaderData }) => {
-    const c = loaderData?.category;
+    const c = loaderData ? findProduct(loaderData.slug) : undefined;
     return {
       meta: c
         ? [
@@ -44,7 +44,9 @@ export const Route = createFileRoute("/products/$category")({
 });
 
 function CategoryPage() {
-  const { category: c } = Route.useLoaderData() as { category: ProductCategory };
+  const { slug } = Route.useLoaderData();
+  const c = findProduct(slug);
+  if (!c) throw notFound();
 
   return (
     <PageShell>
