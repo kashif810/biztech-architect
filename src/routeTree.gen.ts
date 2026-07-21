@@ -22,6 +22,7 @@ import { Route as ServicesServiceRouteImport } from './routes/services.$service'
 import { Route as ProductsCategoryRouteImport } from './routes/products.$category'
 import { Route as AccountingSuppliersRouteImport } from './routes/accounting.suppliers'
 import { Route as AccountingQuotationsRouteImport } from './routes/accounting.quotations'
+import { Route as AccountingInvoicesRouteImport } from './routes/accounting.invoices'
 import { Route as AccountingCustomersRouteImport } from './routes/accounting.customers'
 
 const ServicesRoute = ServicesRouteImport.update({
@@ -89,6 +90,11 @@ const AccountingQuotationsRoute = AccountingQuotationsRouteImport.update({
   path: '/quotations',
   getParentRoute: () => AccountingRoute,
 } as any)
+const AccountingInvoicesRoute = AccountingInvoicesRouteImport.update({
+  id: '/invoices',
+  path: '/invoices',
+  getParentRoute: () => AccountingRoute,
+} as any)
 const AccountingCustomersRoute = AccountingCustomersRouteImport.update({
   id: '/customers',
   path: '/customers',
@@ -103,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/quote': typeof QuoteRoute
   '/services': typeof ServicesRouteWithChildren
   '/accounting/customers': typeof AccountingCustomersRoute
+  '/accounting/invoices': typeof AccountingInvoicesRoute
   '/accounting/quotations': typeof AccountingQuotationsRoute
   '/accounting/suppliers': typeof AccountingSuppliersRoute
   '/products/$category': typeof ProductsCategoryRoute
@@ -116,6 +123,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/quote': typeof QuoteRoute
   '/accounting/customers': typeof AccountingCustomersRoute
+  '/accounting/invoices': typeof AccountingInvoicesRoute
   '/accounting/quotations': typeof AccountingQuotationsRoute
   '/accounting/suppliers': typeof AccountingSuppliersRoute
   '/products/$category': typeof ProductsCategoryRoute
@@ -133,6 +141,7 @@ export interface FileRoutesById {
   '/quote': typeof QuoteRoute
   '/services': typeof ServicesRouteWithChildren
   '/accounting/customers': typeof AccountingCustomersRoute
+  '/accounting/invoices': typeof AccountingInvoicesRoute
   '/accounting/quotations': typeof AccountingQuotationsRoute
   '/accounting/suppliers': typeof AccountingSuppliersRoute
   '/products/$category': typeof ProductsCategoryRoute
@@ -151,6 +160,7 @@ export interface FileRouteTypes {
     | '/quote'
     | '/services'
     | '/accounting/customers'
+    | '/accounting/invoices'
     | '/accounting/quotations'
     | '/accounting/suppliers'
     | '/products/$category'
@@ -164,6 +174,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/quote'
     | '/accounting/customers'
+    | '/accounting/invoices'
     | '/accounting/quotations'
     | '/accounting/suppliers'
     | '/products/$category'
@@ -180,6 +191,7 @@ export interface FileRouteTypes {
     | '/quote'
     | '/services'
     | '/accounting/customers'
+    | '/accounting/invoices'
     | '/accounting/quotations'
     | '/accounting/suppliers'
     | '/products/$category'
@@ -291,6 +303,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountingQuotationsRouteImport
       parentRoute: typeof AccountingRoute
     }
+    '/accounting/invoices': {
+      id: '/accounting/invoices'
+      path: '/invoices'
+      fullPath: '/accounting/invoices'
+      preLoaderRoute: typeof AccountingInvoicesRouteImport
+      parentRoute: typeof AccountingRoute
+    }
     '/accounting/customers': {
       id: '/accounting/customers'
       path: '/customers'
@@ -303,6 +322,7 @@ declare module '@tanstack/react-router' {
 
 interface AccountingRouteChildren {
   AccountingCustomersRoute: typeof AccountingCustomersRoute
+  AccountingInvoicesRoute: typeof AccountingInvoicesRoute
   AccountingQuotationsRoute: typeof AccountingQuotationsRoute
   AccountingSuppliersRoute: typeof AccountingSuppliersRoute
   AccountingIndexRoute: typeof AccountingIndexRoute
@@ -310,6 +330,7 @@ interface AccountingRouteChildren {
 
 const AccountingRouteChildren: AccountingRouteChildren = {
   AccountingCustomersRoute: AccountingCustomersRoute,
+  AccountingInvoicesRoute: AccountingInvoicesRoute,
   AccountingQuotationsRoute: AccountingQuotationsRoute,
   AccountingSuppliersRoute: AccountingSuppliersRoute,
   AccountingIndexRoute: AccountingIndexRoute,
