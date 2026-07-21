@@ -25,6 +25,7 @@ import { Route as AccountingQuotationsRouteImport } from './routes/accounting.qu
 import { Route as AccountingPaymentsRouteImport } from './routes/accounting.payments'
 import { Route as AccountingInvoicesRouteImport } from './routes/accounting.invoices'
 import { Route as AccountingCustomersRouteImport } from './routes/accounting.customers'
+import { Route as AccountingBillsRouteImport } from './routes/accounting.bills'
 
 const ServicesRoute = ServicesRouteImport.update({
   id: '/services',
@@ -106,6 +107,11 @@ const AccountingCustomersRoute = AccountingCustomersRouteImport.update({
   path: '/customers',
   getParentRoute: () => AccountingRoute,
 } as any)
+const AccountingBillsRoute = AccountingBillsRouteImport.update({
+  id: '/bills',
+  path: '/bills',
+  getParentRoute: () => AccountingRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -114,6 +120,7 @@ export interface FileRoutesByFullPath {
   '/products': typeof ProductsRouteWithChildren
   '/quote': typeof QuoteRoute
   '/services': typeof ServicesRouteWithChildren
+  '/accounting/bills': typeof AccountingBillsRoute
   '/accounting/customers': typeof AccountingCustomersRoute
   '/accounting/invoices': typeof AccountingInvoicesRoute
   '/accounting/payments': typeof AccountingPaymentsRoute
@@ -129,6 +136,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/quote': typeof QuoteRoute
+  '/accounting/bills': typeof AccountingBillsRoute
   '/accounting/customers': typeof AccountingCustomersRoute
   '/accounting/invoices': typeof AccountingInvoicesRoute
   '/accounting/payments': typeof AccountingPaymentsRoute
@@ -148,6 +156,7 @@ export interface FileRoutesById {
   '/products': typeof ProductsRouteWithChildren
   '/quote': typeof QuoteRoute
   '/services': typeof ServicesRouteWithChildren
+  '/accounting/bills': typeof AccountingBillsRoute
   '/accounting/customers': typeof AccountingCustomersRoute
   '/accounting/invoices': typeof AccountingInvoicesRoute
   '/accounting/payments': typeof AccountingPaymentsRoute
@@ -168,6 +177,7 @@ export interface FileRouteTypes {
     | '/products'
     | '/quote'
     | '/services'
+    | '/accounting/bills'
     | '/accounting/customers'
     | '/accounting/invoices'
     | '/accounting/payments'
@@ -183,6 +193,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/quote'
+    | '/accounting/bills'
     | '/accounting/customers'
     | '/accounting/invoices'
     | '/accounting/payments'
@@ -201,6 +212,7 @@ export interface FileRouteTypes {
     | '/products'
     | '/quote'
     | '/services'
+    | '/accounting/bills'
     | '/accounting/customers'
     | '/accounting/invoices'
     | '/accounting/payments'
@@ -336,10 +348,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountingCustomersRouteImport
       parentRoute: typeof AccountingRoute
     }
+    '/accounting/bills': {
+      id: '/accounting/bills'
+      path: '/bills'
+      fullPath: '/accounting/bills'
+      preLoaderRoute: typeof AccountingBillsRouteImport
+      parentRoute: typeof AccountingRoute
+    }
   }
 }
 
 interface AccountingRouteChildren {
+  AccountingBillsRoute: typeof AccountingBillsRoute
   AccountingCustomersRoute: typeof AccountingCustomersRoute
   AccountingInvoicesRoute: typeof AccountingInvoicesRoute
   AccountingPaymentsRoute: typeof AccountingPaymentsRoute
@@ -349,6 +369,7 @@ interface AccountingRouteChildren {
 }
 
 const AccountingRouteChildren: AccountingRouteChildren = {
+  AccountingBillsRoute: AccountingBillsRoute,
   AccountingCustomersRoute: AccountingCustomersRoute,
   AccountingInvoicesRoute: AccountingInvoicesRoute,
   AccountingPaymentsRoute: AccountingPaymentsRoute,
