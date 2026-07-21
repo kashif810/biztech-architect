@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Plus, Trash2, FileText, Printer, ArrowRight, Eye, X } from "lucide-react";
 import { Fld, Modal } from "./accounting.customers";
 import { computeTotals, emptyCustomer, fmtDate, fmtMoney, nextDocNumber, type Item, type CustomerSnapshot } from "@/lib/accounting";
-import { QuotationPrint } from "@/components/accounting/DocumentPrint";
+import { QuotationPrint, InvoicePrint } from "@/components/accounting/DocumentPrint";
 
 export const Route = createFileRoute("/accounting/quotations")({ component: QuotationsPage });
 
@@ -283,15 +283,10 @@ export function PrintModal({ doc, kind, onClose }: { doc: any; kind: "quotation"
           <div className="print-area">
             {kind === "quotation"
               ? <QuotationPrint doc={doc} items={items} settings={settings} />
-              : <InvoicePrintWrapped doc={doc} items={items} settings={settings} />}
+              : <InvoicePrint doc={doc} items={items} settings={settings} />}
           </div>
         )}
       </div>
     </div>
   );
-}
-
-function InvoicePrintWrapped({ doc, items, settings }: any) {
-  const { InvoicePrint } = require("@/components/accounting/DocumentPrint");
-  return <InvoicePrint doc={doc} items={items} settings={settings} />;
 }
