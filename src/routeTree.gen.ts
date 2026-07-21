@@ -21,6 +21,7 @@ import { Route as AccountingIndexRouteImport } from './routes/accounting.index'
 import { Route as ServicesServiceRouteImport } from './routes/services.$service'
 import { Route as ProductsCategoryRouteImport } from './routes/products.$category'
 import { Route as AccountingSuppliersRouteImport } from './routes/accounting.suppliers'
+import { Route as AccountingSettingsRouteImport } from './routes/accounting.settings'
 import { Route as AccountingQuotationsRouteImport } from './routes/accounting.quotations'
 import { Route as AccountingPaymentsRouteImport } from './routes/accounting.payments'
 import { Route as AccountingInvoicesRouteImport } from './routes/accounting.invoices'
@@ -87,6 +88,11 @@ const AccountingSuppliersRoute = AccountingSuppliersRouteImport.update({
   path: '/suppliers',
   getParentRoute: () => AccountingRoute,
 } as any)
+const AccountingSettingsRoute = AccountingSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AccountingRoute,
+} as any)
 const AccountingQuotationsRoute = AccountingQuotationsRouteImport.update({
   id: '/quotations',
   path: '/quotations',
@@ -125,6 +131,7 @@ export interface FileRoutesByFullPath {
   '/accounting/invoices': typeof AccountingInvoicesRoute
   '/accounting/payments': typeof AccountingPaymentsRoute
   '/accounting/quotations': typeof AccountingQuotationsRoute
+  '/accounting/settings': typeof AccountingSettingsRoute
   '/accounting/suppliers': typeof AccountingSuppliersRoute
   '/products/$category': typeof ProductsCategoryRoute
   '/services/$service': typeof ServicesServiceRoute
@@ -141,6 +148,7 @@ export interface FileRoutesByTo {
   '/accounting/invoices': typeof AccountingInvoicesRoute
   '/accounting/payments': typeof AccountingPaymentsRoute
   '/accounting/quotations': typeof AccountingQuotationsRoute
+  '/accounting/settings': typeof AccountingSettingsRoute
   '/accounting/suppliers': typeof AccountingSuppliersRoute
   '/products/$category': typeof ProductsCategoryRoute
   '/services/$service': typeof ServicesServiceRoute
@@ -161,6 +169,7 @@ export interface FileRoutesById {
   '/accounting/invoices': typeof AccountingInvoicesRoute
   '/accounting/payments': typeof AccountingPaymentsRoute
   '/accounting/quotations': typeof AccountingQuotationsRoute
+  '/accounting/settings': typeof AccountingSettingsRoute
   '/accounting/suppliers': typeof AccountingSuppliersRoute
   '/products/$category': typeof ProductsCategoryRoute
   '/services/$service': typeof ServicesServiceRoute
@@ -182,6 +191,7 @@ export interface FileRouteTypes {
     | '/accounting/invoices'
     | '/accounting/payments'
     | '/accounting/quotations'
+    | '/accounting/settings'
     | '/accounting/suppliers'
     | '/products/$category'
     | '/services/$service'
@@ -198,6 +208,7 @@ export interface FileRouteTypes {
     | '/accounting/invoices'
     | '/accounting/payments'
     | '/accounting/quotations'
+    | '/accounting/settings'
     | '/accounting/suppliers'
     | '/products/$category'
     | '/services/$service'
@@ -217,6 +228,7 @@ export interface FileRouteTypes {
     | '/accounting/invoices'
     | '/accounting/payments'
     | '/accounting/quotations'
+    | '/accounting/settings'
     | '/accounting/suppliers'
     | '/products/$category'
     | '/services/$service'
@@ -320,6 +332,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountingSuppliersRouteImport
       parentRoute: typeof AccountingRoute
     }
+    '/accounting/settings': {
+      id: '/accounting/settings'
+      path: '/settings'
+      fullPath: '/accounting/settings'
+      preLoaderRoute: typeof AccountingSettingsRouteImport
+      parentRoute: typeof AccountingRoute
+    }
     '/accounting/quotations': {
       id: '/accounting/quotations'
       path: '/quotations'
@@ -364,6 +383,7 @@ interface AccountingRouteChildren {
   AccountingInvoicesRoute: typeof AccountingInvoicesRoute
   AccountingPaymentsRoute: typeof AccountingPaymentsRoute
   AccountingQuotationsRoute: typeof AccountingQuotationsRoute
+  AccountingSettingsRoute: typeof AccountingSettingsRoute
   AccountingSuppliersRoute: typeof AccountingSuppliersRoute
   AccountingIndexRoute: typeof AccountingIndexRoute
 }
@@ -374,6 +394,7 @@ const AccountingRouteChildren: AccountingRouteChildren = {
   AccountingInvoicesRoute: AccountingInvoicesRoute,
   AccountingPaymentsRoute: AccountingPaymentsRoute,
   AccountingQuotationsRoute: AccountingQuotationsRoute,
+  AccountingSettingsRoute: AccountingSettingsRoute,
   AccountingSuppliersRoute: AccountingSuppliersRoute,
   AccountingIndexRoute: AccountingIndexRoute,
 }
