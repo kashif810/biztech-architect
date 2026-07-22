@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Trash2, Eye, Wallet } from "lucide-react";
+import { Plus, Trash2, Eye, Wallet, Pencil } from "lucide-react";
 import { Fld, Modal } from "./accounting.customers";
 import { ItemForm, PrintModal } from "./accounting.quotations";
 import { computeTotals, emptyCustomer, fmtDate, fmtMoney, nextDocNumber, addDays, type Item, type CustomerSnapshot } from "@/lib/accounting";
@@ -13,7 +13,7 @@ type Inv = { id: string; number: string; date: string; due_date: string | null; 
 
 function InvoicesPage() {
   const [rows, setRows] = useState<Inv[]>([]);
-  const [editing, setEditing] = useState<"new" | null>(null);
+  const [editing, setEditing] = useState<"new" | Inv | null>(null);
   const [viewing, setViewing] = useState<Inv | null>(null);
   const [paying, setPaying] = useState<Inv | null>(null);
 
@@ -55,6 +55,7 @@ function InvoicesPage() {
                 <td className="p-3"><StatusPill s={r.status} /></td>
                 <td className="p-3 text-right">
                   <button onClick={() => setViewing(r)} className="p-2 text-slate-500 hover:text-blue-600" title="View / Print"><Eye className="h-4 w-4"/></button>
+                  <button onClick={() => setEditing(r)} className="p-2 text-slate-500 hover:text-blue-600" title="Edit"><Pencil className="h-4 w-4"/></button>
                   <button onClick={() => setPaying(r)} className="p-2 text-slate-500 hover:text-emerald-600" title="Record Payment"><Wallet className="h-4 w-4"/></button>
                   <button onClick={() => del(r.id)} className="p-2 text-slate-500 hover:text-red-600"><Trash2 className="h-4 w-4"/></button>
                 </td>
@@ -65,8 +66,8 @@ function InvoicesPage() {
         </table>
       </div>
 
-      {editing && <InvoiceEditor onClose={() => setEditing(null)} onSaved={() => { setEditing(null); load(); }} />}
-      {viewing && <PrintModal doc={viewing} kind="invoice" onClose={() => setViewing(null)} />}
+      {editing && <InvoiceEditor existing={editing === "new" ? null : editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); load(); }} />}
+      {viewing && <PrintModal doc={viewing} kind="invoice" onClose={() => setViewing(null)} onEdit={() => { setEditing(viewing); setViewing(null); }} />}
       {paying && <PaymentModal invoice={paying} onClose={() => setPaying(null)} onSaved={() => { setPaying(null); load(); }} />}
     </div>
   );
@@ -77,17 +78,17 @@ function StatusPill({ s }: { s: string }) {
   return <span className={`text-[10px] uppercase tracking-wider px-2 py-1 rounded ${map[s] || "bg-slate-100 text-slate-600"}`}>{s}</span>;
 }
 
-function InvoiceEditor({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
+function InvoiceEditor({ existing, onClose, onSaved }: { existing: Inv | null; onClose: () => void; onSaved: () => void }) {
   const [customers, setCustomers] = useState<any[]>([]);
   const [settings, setSettings] = useState<any>(null);
-  const [customerId, setCustomerId] = useState("");
-  const [snap, setSnap] = useState<CustomerSnapshot>(emptyCustomer());
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
-  const [dueDate, setDueDate] = useState(() => addDays(new Date().toISOString().slice(0, 10), 30));
-  const [poNumber, setPoNumber] = useState("");
-  const [taxRate, setTaxRate] = useState(16);
-  const [notes, setNotes] = useState("");
-  const [terms, setTerms] = useState("");
+  const [customerId, setCustomerId] = useState(existing?.customer_id ?? "");
+  const [snap, setSnap] = useState<CustomerSnapshot>(existing?.customer_snapshot ?? emptyCustomer());
+  const [date, setDate] = useState(existing?.date ?? new Date().toISOString().slice(0, 10));
+  const [dueDate, setDueDate] = useState(existing?.due_date ?? addDays(new Date().toISOString().slice(0, 10), 30));
+  const [poNumber, setPoNumber] = useState(existing?.po_number ?? "");
+  const [taxRate, setTaxRate] = useState<number>(existing?.tax_rate ?? 16);
+  const [notes, setNotes] = useState(existing?.notes ?? "");
+  const [terms, setTerms] = useState(existing?.terms ?? "");
   const [items, setItems] = useState<Item[]>([{ description: "", detail: "", quantity: 1, unit_price: 0, amount: 0, sort_order: 0 }]);
   const [saving, setSaving] = useState(false);
 
@@ -99,15 +100,19 @@ function InvoiceEditor({ onClose, onSaved }: { onClose: () => void; onSaved: () 
       ]);
       setCustomers(c.data ?? []);
       setSettings(s.data);
-      if (s.data) { setTaxRate(Number(s.data.default_tax_rate || 16)); setDueDate(addDays(new Date().toISOString().slice(0, 10), Number(s.data.default_credit_days || 30))); }
+      if (s.data && !existing) { setTaxRate(Number(s.data.default_tax_rate || 16)); setDueDate(addDays(new Date().toISOString().slice(0, 10), Number(s.data.default_credit_days || 30))); }
+      if (existing) {
+        const { data: its } = await (supabase as any).from("invoice_items").select("*").eq("invoice_id", existing.id).order("sort_order");
+        if (its && its.length) setItems(its.map((it: any, i: number) => ({ id: it.id, description: it.description || "", detail: it.detail || "", quantity: Number(it.quantity), unit_price: Number(it.unit_price), amount: Number(it.amount), sort_order: i })));
+      }
     })();
-  }, []);
+  }, [existing]);
 
   useEffect(() => {
-    if (!customerId) return;
+    if (!customerId || existing) return;
     const c = customers.find((x) => x.id === customerId);
     if (c) setSnap({ name: c.name, company: c.company, address: c.address, city: c.city, country: c.country, ntn: c.ntn, strn: c.strn, email: c.email, phone: c.phone });
-  }, [customerId, customers]);
+  }, [customerId, customers, existing]);
 
   const totals = useMemo(() => computeTotals(items, taxRate), [items, taxRate]);
   function updItem(i: number, patch: Partial<Item>) {
@@ -119,22 +124,37 @@ function InvoiceEditor({ onClose, onSaved }: { onClose: () => void; onSaved: () 
     if (items.every((i) => !i.description)) return toast.error("Add at least one item");
     setSaving(true);
     try {
-      const number = await nextDocNumber("invoice");
-      const { data: inv, error } = await (supabase as any).from("invoices").insert({
-        number, customer_id: customerId || null, customer_snapshot: snap, date, due_date: dueDate, po_number: poNumber,
-        subtotal: totals.subtotal, tax_rate: taxRate, tax_amount: totals.tax_amount, total: totals.total, balance: totals.total,
-        notes, terms, status: "unpaid",
-      }).select().single();
-      if (error) throw error;
-      const clean = items.filter((it) => it.description.trim()).map((it, idx) => ({ invoice_id: inv.id, description: it.description, detail: it.detail, quantity: it.quantity, unit_price: it.unit_price, amount: it.amount, sort_order: idx }));
-      if (clean.length) await (supabase as any).from("invoice_items").insert(clean);
-      toast.success(`Invoice ${number} saved`);
+      const clean = items.filter((it) => it.description.trim());
+      if (existing) {
+        const paid = Number(existing.paid_amount || 0);
+        const balance = +(totals.total - paid).toFixed(2);
+        const status = paid <= 0 ? "unpaid" : (balance <= 0 ? "paid" : "partial");
+        const { error } = await (supabase as any).from("invoices").update({
+          customer_id: customerId || null, customer_snapshot: snap, date, due_date: dueDate, po_number: poNumber,
+          subtotal: totals.subtotal, tax_rate: taxRate, tax_amount: totals.tax_amount, total: totals.total, balance, status,
+          notes, terms,
+        }).eq("id", existing.id);
+        if (error) throw error;
+        await (supabase as any).from("invoice_items").delete().eq("invoice_id", existing.id);
+        if (clean.length) await (supabase as any).from("invoice_items").insert(clean.map((it, idx) => ({ invoice_id: existing.id, description: it.description, detail: it.detail, quantity: it.quantity, unit_price: it.unit_price, amount: it.amount, sort_order: idx })));
+        toast.success(`Invoice ${existing.number} updated`);
+      } else {
+        const number = await nextDocNumber("invoice");
+        const { data: inv, error } = await (supabase as any).from("invoices").insert({
+          number, customer_id: customerId || null, customer_snapshot: snap, date, due_date: dueDate, po_number: poNumber,
+          subtotal: totals.subtotal, tax_rate: taxRate, tax_amount: totals.tax_amount, total: totals.total, balance: totals.total,
+          notes, terms, status: "unpaid",
+        }).select().single();
+        if (error) throw error;
+        if (clean.length) await (supabase as any).from("invoice_items").insert(clean.map((it, idx) => ({ invoice_id: inv.id, description: it.description, detail: it.detail, quantity: it.quantity, unit_price: it.unit_price, amount: it.amount, sort_order: idx })));
+        toast.success(`Invoice ${number} saved`);
+      }
       onSaved();
     } catch (e: any) { toast.error(e.message); } finally { setSaving(false); }
   }
 
   return (
-    <Modal title="New Invoice" onClose={onClose}>
+    <Modal title={existing ? `Edit Invoice · ${existing.number}` : "New Invoice"} onClose={onClose}>
       <ItemForm
         customers={customers} customerId={customerId} setCustomerId={setCustomerId}
         snap={snap} setSnap={setSnap}
@@ -147,7 +167,7 @@ function InvoiceEditor({ onClose, onSaved }: { onClose: () => void; onSaved: () 
       />
       <div className="flex justify-end gap-2 mt-6">
         <button onClick={onClose} className="px-4 py-2 rounded-md border border-slate-300 text-sm">Cancel</button>
-        <button onClick={save} disabled={saving} className="px-5 py-2 rounded-md bg-blue-600 text-white text-sm font-semibold disabled:opacity-60">{saving ? "Saving…" : "Save Invoice"}</button>
+        <button onClick={save} disabled={saving} className="px-5 py-2 rounded-md bg-blue-600 text-white text-sm font-semibold disabled:opacity-60">{saving ? "Saving…" : (existing ? "Update" : "Save Invoice")}</button>
       </div>
     </Modal>
   );
