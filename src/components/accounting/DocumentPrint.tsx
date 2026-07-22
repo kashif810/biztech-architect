@@ -36,16 +36,16 @@ export function QuotationPrint({ doc, items, settings }: { doc: Doc; items: Item
     <div className="print-doc bg-white text-slate-900 max-w-[820px] mx-auto p-10 text-[13px]">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-4">
-          <div className="h-16 w-16 rounded bg-[#0b1a3a] flex items-center justify-center">
-            <img src={evertechLogo} alt="Evertech" className="h-12 w-12 object-contain" />
+          <div className="h-16 w-16 rounded-lg bg-[#0b1a3a] flex items-center justify-center shadow-sm">
+            <img src={evertechLogo} alt="Evertech" className="h-11 w-11 object-contain" />
           </div>
           <div>
-            <div className="text-2xl font-black tracking-tight text-[#0b1a3a]">EVERTECH</div>
-            <div className="text-[11px] text-slate-500 tracking-wider">CORPORATION · DELIVERING FUTURE</div>
+            <div className="text-2xl font-black tracking-tight text-[#0b1a3a] leading-none">EverTech Corporation</div>
+            <div className="text-[11px] text-slate-500 tracking-wider mt-1">DELIVERING FUTURE</div>
           </div>
         </div>
         <div className="text-right">
-          <div className="text-4xl font-bold text-slate-800">QUOTATION</div>
+          <div className="text-4xl font-bold text-[#0b1a3a]">QUOTATION</div>
           <div className="mt-3 text-[12px] leading-tight text-slate-600">
             <div className="font-bold text-slate-800">{settings.company_name}</div>
             <div>{settings.address}</div>
@@ -54,6 +54,7 @@ export function QuotationPrint({ doc, items, settings }: { doc: Doc; items: Item
           </div>
         </div>
       </div>
+      <div className="mt-4 h-1 rounded bg-gradient-to-r from-[#0b1a3a] via-[#2c78b8] to-[#3ba7d9]" />
 
       <div className="mt-8 grid grid-cols-2 gap-8">
         <div>
@@ -77,7 +78,7 @@ export function QuotationPrint({ doc, items, settings }: { doc: Doc; items: Item
 
       <table className="w-full mt-8 border-collapse">
         <thead>
-          <tr className="bg-[#3ba7d9] text-white text-left">
+          <tr className="bg-[#0b1a3a] text-white text-left">
             <th className="px-3 py-2.5 text-[12px] font-semibold">Items</th>
             <th className="px-3 py-2.5 text-[12px] font-semibold text-center w-24">Quantity</th>
             <th className="px-3 py-2.5 text-[12px] font-semibold text-right w-32">Price</th>
