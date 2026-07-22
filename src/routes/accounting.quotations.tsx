@@ -2,9 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Trash2, FileText, Printer, ArrowRight, Eye, X } from "lucide-react";
+import { Plus, Trash2, Printer, Eye, X, Pencil } from "lucide-react";
 import { Fld, Modal } from "./accounting.customers";
-import { computeTotals, emptyCustomer, fmtDate, fmtMoney, nextDocNumber, type Item, type CustomerSnapshot } from "@/lib/accounting";
+import { computeTotals, emptyCustomer, fmtDate, fmtMoney, nextDocNumber, addDays, TAX_PRESETS, type Item, type CustomerSnapshot } from "@/lib/accounting";
 import { QuotationPrint, InvoicePrint } from "@/components/accounting/DocumentPrint";
 
 export const Route = createFileRoute("/accounting/quotations")({ component: QuotationsPage });
@@ -26,30 +26,6 @@ function QuotationsPage() {
     if (!confirm("Delete quotation?")) return;
     const { error } = await (supabase as any).from("quotations").delete().eq("id", id);
     if (error) return toast.error(error.message);
-    load();
-  }
-
-  async function convertToInvoice(q: Q) {
-    if (!confirm(`Convert ${q.number} to an invoice?`)) return;
-    const { data: items } = await (supabase as any).from("quotation_items").select("*").eq("quotation_id", q.id).order("sort_order");
-    const number = await nextDocNumber("invoice");
-    const today = new Date().toISOString().slice(0, 10);
-    const { data: settings } = await (supabase as any).from("accounting_settings").select("default_credit_days,default_tax_rate").eq("id", 1).single();
-    const credit = Number(settings?.default_credit_days || 30);
-    const due = new Date(); due.setDate(due.getDate() + credit);
-    const { data: inv, error } = await (supabase as any).from("invoices").insert({
-      number, customer_id: q.customer_id, customer_snapshot: q.customer_snapshot, quotation_id: q.id,
-      date: today, due_date: due.toISOString().slice(0, 10), status: "unpaid",
-      subtotal: q.subtotal, tax_rate: q.tax_rate, tax_amount: q.tax_amount, total: q.total, balance: q.total,
-    }).select().single();
-    if (error) return toast.error(error.message);
-    if (items && items.length > 0) {
-      await (supabase as any).from("invoice_items").insert(items.map((it: any) => ({
-        invoice_id: inv.id, description: it.description, detail: it.detail, quantity: it.quantity, unit_price: it.unit_price, amount: it.amount, sort_order: it.sort_order
-      })));
-    }
-    await (supabase as any).from("quotations").update({ status: "invoiced" }).eq("id", q.id);
-    toast.success(`Invoice ${number} created`);
     load();
   }
 
@@ -76,7 +52,7 @@ function QuotationsPage() {
                 <td className="p-3"><span className={`text-[10px] uppercase tracking-wider px-2 py-1 rounded ${r.status === "invoiced" ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>{r.status}</span></td>
                 <td className="p-3 text-right">
                   <button onClick={() => setViewing(r)} className="p-2 text-slate-500 hover:text-blue-600" title="View / Print"><Eye className="h-4 w-4"/></button>
-                  {r.status !== "invoiced" && <button onClick={() => convertToInvoice(r)} className="p-2 text-slate-500 hover:text-emerald-600" title="Convert to Invoice"><ArrowRight className="h-4 w-4"/></button>}
+                  <button onClick={() => setEditing(r)} className="p-2 text-slate-500 hover:text-blue-600" title="Edit"><Pencil className="h-4 w-4"/></button>
                   <button onClick={() => del(r.id)} className="p-2 text-slate-500 hover:text-red-600"><Trash2 className="h-4 w-4"/></button>
                 </td>
               </tr>
@@ -86,23 +62,24 @@ function QuotationsPage() {
         </table>
       </div>
 
-      {editing && <QuoteEditor onClose={() => setEditing(null)} onSaved={() => { setEditing(null); load(); }} />}
-      {viewing && <PrintModal doc={viewing} kind="quotation" onClose={() => setViewing(null)} />}
+      {editing && <QuoteEditor existing={editing === "new" ? null : editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); load(); }} />}
+      {viewing && <PrintModal doc={viewing} kind="quotation" onClose={() => setViewing(null)} onEdit={() => { setEditing(viewing); setViewing(null); }} />}
     </div>
   );
 }
 
-function QuoteEditor({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
+function QuoteEditor({ existing, onClose, onSaved }: { existing: Q | null; onClose: () => void; onSaved: () => void }) {
   const [customers, setCustomers] = useState<any[]>([]);
   const [settings, setSettings] = useState<any>(null);
-  const [customerId, setCustomerId] = useState<string>("");
-  const [snap, setSnap] = useState<CustomerSnapshot>(emptyCustomer());
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
-  const [validUntil, setValidUntil] = useState<string>(() => { const d = new Date(); d.setDate(d.getDate() + 7); return d.toISOString().slice(0, 10); });
-  const [taxRate, setTaxRate] = useState(0);
-  const [notes, setNotes] = useState("");
-  const [terms, setTerms] = useState("");
+  const [customerId, setCustomerId] = useState<string>(existing?.customer_id ?? "");
+  const [snap, setSnap] = useState<CustomerSnapshot>(existing?.customer_snapshot ?? emptyCustomer());
+  const [date, setDate] = useState(existing?.date ?? new Date().toISOString().slice(0, 10));
+  const [validUntil, setValidUntil] = useState<string>(existing?.valid_until ?? (() => { const d = new Date(); d.setDate(d.getDate() + 7); return d.toISOString().slice(0, 10); })());
+  const [taxRate, setTaxRate] = useState<number>(existing?.tax_rate ?? 0);
+  const [notes, setNotes] = useState(existing?.notes ?? "");
+  const [terms, setTerms] = useState(existing?.terms ?? "");
   const [items, setItems] = useState<Item[]>([{ description: "", detail: "", quantity: 1, unit_price: 0, amount: 0, sort_order: 0 }]);
+  const [autoInvoice, setAutoInvoice] = useState<boolean>(!existing);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -113,15 +90,19 @@ function QuoteEditor({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
       ]);
       setCustomers(c.data ?? []);
       setSettings(s.data);
-      if (s.data) { setTerms(s.data.quotation_terms); }
+      if (s.data && !existing) { setTerms(s.data.quotation_terms || ""); }
+      if (existing) {
+        const { data: its } = await (supabase as any).from("quotation_items").select("*").eq("quotation_id", existing.id).order("sort_order");
+        if (its && its.length) setItems(its.map((it: any, i: number) => ({ id: it.id, description: it.description || "", detail: it.detail || "", quantity: Number(it.quantity), unit_price: Number(it.unit_price), amount: Number(it.amount), sort_order: i })));
+      }
     })();
-  }, []);
+  }, [existing]);
 
   useEffect(() => {
-    if (!customerId) return;
+    if (!customerId || existing) return;
     const c = customers.find((x) => x.id === customerId);
     if (c) setSnap({ name: c.name, company: c.company, address: c.address, city: c.city, country: c.country, ntn: c.ntn, strn: c.strn, email: c.email, phone: c.phone });
-  }, [customerId, customers]);
+  }, [customerId, customers, existing]);
 
   const totals = useMemo(() => computeTotals(items, taxRate), [items, taxRate]);
 
@@ -139,22 +120,64 @@ function QuoteEditor({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
     if (items.length === 0 || items.every((i) => !i.description)) return toast.error("Add at least one item");
     setSaving(true);
     try {
-      const number = await nextDocNumber("quotation");
-      const { data: q, error } = await (supabase as any).from("quotations").insert({
-        number, customer_id: customerId || null, customer_snapshot: snap, date, valid_until: validUntil,
-        subtotal: totals.subtotal, tax_rate: taxRate, tax_amount: totals.tax_amount, total: totals.total, notes, terms,
-      }).select().single();
-      if (error) throw error;
-      const cleanItems = items.filter((it) => it.description.trim()).map((it, idx) => ({ quotation_id: q.id, description: it.description, detail: it.detail, quantity: it.quantity, unit_price: it.unit_price, amount: it.amount, sort_order: idx }));
-      if (cleanItems.length) await (supabase as any).from("quotation_items").insert(cleanItems);
-      toast.success(`Quotation ${number} saved`);
+      const cleanItems = items.filter((it) => it.description.trim());
+      let q: any;
+      if (existing) {
+        const { data, error } = await (supabase as any).from("quotations").update({
+          customer_id: customerId || null, customer_snapshot: snap, date, valid_until: validUntil,
+          subtotal: totals.subtotal, tax_rate: taxRate, tax_amount: totals.tax_amount, total: totals.total, notes, terms,
+        }).eq("id", existing.id).select().single();
+        if (error) throw error;
+        q = data;
+        await (supabase as any).from("quotation_items").delete().eq("quotation_id", existing.id);
+        if (cleanItems.length) await (supabase as any).from("quotation_items").insert(cleanItems.map((it, idx) => ({ quotation_id: existing.id, description: it.description, detail: it.detail, quantity: it.quantity, unit_price: it.unit_price, amount: it.amount, sort_order: idx })));
+
+        // Sync linked invoice if it exists and is still unpaid
+        const { data: linked } = await (supabase as any).from("invoices").select("id,paid_amount").eq("quotation_id", existing.id).maybeSingle();
+        if (linked && Number(linked.paid_amount || 0) === 0) {
+          await (supabase as any).from("invoices").update({
+            customer_id: customerId || null, customer_snapshot: snap,
+            subtotal: totals.subtotal, tax_rate: taxRate, tax_amount: totals.tax_amount, total: totals.total, balance: totals.total,
+          }).eq("id", linked.id);
+          await (supabase as any).from("invoice_items").delete().eq("invoice_id", linked.id);
+          if (cleanItems.length) await (supabase as any).from("invoice_items").insert(cleanItems.map((it, idx) => ({ invoice_id: linked.id, description: it.description, detail: it.detail, quantity: it.quantity, unit_price: it.unit_price, amount: it.amount, sort_order: idx })));
+        }
+        toast.success(`Quotation ${q.number} updated`);
+      } else {
+        const number = await nextDocNumber("quotation");
+        const { data, error } = await (supabase as any).from("quotations").insert({
+          number, customer_id: customerId || null, customer_snapshot: snap, date, valid_until: validUntil,
+          subtotal: totals.subtotal, tax_rate: taxRate, tax_amount: totals.tax_amount, total: totals.total, notes, terms,
+        }).select().single();
+        if (error) throw error;
+        q = data;
+        if (cleanItems.length) await (supabase as any).from("quotation_items").insert(cleanItems.map((it, idx) => ({ quotation_id: q.id, description: it.description, detail: it.detail, quantity: it.quantity, unit_price: it.unit_price, amount: it.amount, sort_order: idx })));
+
+        if (autoInvoice) {
+          const invNumber = await nextDocNumber("invoice");
+          const credit = Number(settings?.default_credit_days || 30);
+          const dueDate = addDays(date, credit);
+          const { data: inv, error: ierr } = await (supabase as any).from("invoices").insert({
+            number: invNumber, customer_id: customerId || null, customer_snapshot: snap, quotation_id: q.id,
+            date, due_date: dueDate, status: "unpaid",
+            subtotal: totals.subtotal, tax_rate: taxRate, tax_amount: totals.tax_amount, total: totals.total, balance: totals.total,
+            notes, terms,
+          }).select().single();
+          if (ierr) throw ierr;
+          if (cleanItems.length) await (supabase as any).from("invoice_items").insert(cleanItems.map((it, idx) => ({ invoice_id: inv.id, description: it.description, detail: it.detail, quantity: it.quantity, unit_price: it.unit_price, amount: it.amount, sort_order: idx })));
+          await (supabase as any).from("quotations").update({ status: "invoiced" }).eq("id", q.id);
+          toast.success(`Quotation ${number} + Invoice ${invNumber} created`);
+        } else {
+          toast.success(`Quotation ${number} saved`);
+        }
+      }
       onSaved();
     } catch (e: any) { toast.error(e.message); }
     finally { setSaving(false); }
   }
 
   return (
-    <Modal title="New Quotation" onClose={onClose}>
+    <Modal title={existing ? `Edit Quotation · ${existing.number}` : "New Quotation"} onClose={onClose}>
       <ItemForm
         customers={customers} customerId={customerId} setCustomerId={setCustomerId}
         snap={snap} setSnap={setSnap} date={date} setDate={setDate}
@@ -162,9 +185,17 @@ function QuoteEditor({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
         taxRate={taxRate} setTaxRate={setTaxRate} items={items} setItems={setItems} updItem={updItem}
         totals={totals} notes={notes} setNotes={setNotes} terms={terms} setTerms={setTerms}
       />
-      <div className="flex justify-end gap-2 mt-6">
+      <div className="flex items-center justify-between gap-2 mt-6">
+        {!existing ? (
+          <label className="flex items-center gap-2 text-sm text-slate-700 select-none">
+            <input type="checkbox" checked={autoInvoice} onChange={(e) => setAutoInvoice(e.target.checked)} className="h-4 w-4" />
+            Also create matching Invoice
+          </label>
+        ) : <span className="text-xs text-slate-500">Editing will sync the linked invoice if it hasn't been paid yet.</span>}
+        <div className="flex gap-2">
         <button onClick={onClose} className="px-4 py-2 rounded-md border border-slate-300 text-sm">Cancel</button>
-        <button onClick={save} disabled={saving} className="px-5 py-2 rounded-md bg-blue-600 text-white text-sm font-semibold disabled:opacity-60">{saving ? "Saving…" : "Save Quotation"}</button>
+        <button onClick={save} disabled={saving} className="px-5 py-2 rounded-md bg-blue-600 text-white text-sm font-semibold disabled:opacity-60">{saving ? "Saving…" : (existing ? "Update" : "Save Quotation")}</button>
+        </div>
       </div>
     </Modal>
   );
@@ -206,7 +237,26 @@ export function ItemForm(p: {
       <div className="grid grid-cols-4 gap-4 pt-4 border-t border-slate-200">
         <Fld label="Date" type="date" value={p.date} onChange={p.setDate} />
         <Fld label={p.secondDateLabel} type="date" value={p.secondDate} onChange={p.setSecondDate} />
-        <Fld label="Tax %" type="number" value={p.taxRate} onChange={(v) => p.setTaxRate(Number(v))} />
+        <div>
+          <label className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">Tax %</label>
+          <div className="mt-1 flex gap-1">
+            <select
+              value={TAX_PRESETS.includes(p.taxRate) ? String(p.taxRate) : "custom"}
+              onChange={(e) => { if (e.target.value !== "custom") p.setTaxRate(Number(e.target.value)); }}
+              className="flex-1 px-2 py-2 rounded-md border border-slate-300 text-sm"
+            >
+              {TAX_PRESETS.map((r) => <option key={r} value={r}>{r}%</option>)}
+              <option value="custom">Custom…</option>
+            </select>
+            <input
+              type="number"
+              value={p.taxRate}
+              onChange={(e) => p.setTaxRate(Number(e.target.value))}
+              className="w-16 px-2 py-2 rounded-md border border-slate-300 text-sm"
+              title="Custom tax rate"
+            />
+          </div>
+        </div>
         {p.extra}
       </div>
 
@@ -252,7 +302,7 @@ export function ItemForm(p: {
   );
 }
 
-export function PrintModal({ doc, kind, onClose }: { doc: any; kind: "quotation" | "invoice"; onClose: () => void }) {
+export function PrintModal({ doc, kind, onClose, onEdit }: { doc: any; kind: "quotation" | "invoice"; onClose: () => void; onEdit?: () => void }) {
   const [items, setItems] = useState<any[]>([]);
   const [settings, setSettings] = useState<any>(null);
 
@@ -275,6 +325,7 @@ export function PrintModal({ doc, kind, onClose }: { doc: any; kind: "quotation"
         <div className="max-w-[860px] mx-auto mb-4 flex items-center justify-between px-4">
           <div className="text-white font-semibold">{doc.number}</div>
           <div className="flex gap-2">
+            {onEdit && <button onClick={onEdit} className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-white text-slate-800 text-sm font-semibold"><Pencil className="h-4 w-4"/>Edit</button>}
             <button onClick={() => window.print()} className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-blue-600 text-white text-sm font-semibold"><Printer className="h-4 w-4"/>Print / Save PDF</button>
             <button onClick={onClose} className="p-2 rounded-md bg-white/10 text-white"><X className="h-4 w-4"/></button>
           </div>
