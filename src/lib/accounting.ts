@@ -55,3 +55,5 @@ export function addDays(dateStr: string, days: number): string {
   d.setDate(d.getDate() + days);
   return d.toISOString().slice(0, 10);
 }
+
+export const TAX_PRESETS = [0, 5, 10, 16, 17, 18];
