@@ -124,54 +124,63 @@ export function InvoicePrint({ doc, items, settings }: { doc: Doc; items: Item[]
   const c = doc.customer_snapshot || {};
   return (
     <div className="print-doc bg-white text-slate-900 max-w-[820px] mx-auto p-10 text-[13px]">
-      <div className="text-center border-b-2 border-slate-800 pb-2">
-        <div className="text-3xl font-black uppercase tracking-wide">{settings.company_name}</div>
-        <div className="text-[12px] mt-1">{settings.address}</div>
-        <div className="text-[12px]">Tel: {settings.phone} {settings.email && <>· {settings.email}</>}</div>
+      <div className="flex items-start justify-between pb-4">
+        <div className="flex items-center gap-4">
+          <div className="h-16 w-16 rounded-lg bg-[#0b1a3a] flex items-center justify-center shadow-sm">
+            <img src={evertechLogo} alt="Evertech" className="h-11 w-11 object-contain" />
+          </div>
+          <div>
+            <div className="text-2xl font-black tracking-tight text-[#0b1a3a] leading-none">{settings.company_name}</div>
+            <div className="text-[11px] text-slate-500 tracking-wider mt-1">DELIVERING FUTURE</div>
+            <div className="text-[11px] text-slate-600 mt-2">{settings.address}</div>
+            <div className="text-[11px] text-slate-600">Tel: {settings.phone}{settings.email && <> · {settings.email}</>}</div>
+          </div>
+        </div>
+        <div className="text-right">
+          <div className="text-3xl font-bold text-[#0b1a3a] leading-none">SALES TAX INVOICE</div>
+          <div className="mt-2 text-[11px] text-slate-600">NTN NO. <span className="font-semibold text-slate-800">{settings.ntn}</span>{settings.strn && <> · STRN <span className="font-semibold text-slate-800">{settings.strn}</span></>}</div>
+        </div>
       </div>
-      <div className="text-center mt-3 text-[13px]">NTN NO. {settings.ntn}{settings.strn && <> · STRN {settings.strn}</>}</div>
-      <div className="text-center mt-4">
-        <span className="text-xl font-bold underline underline-offset-4">SALES TAX INVOICE</span>
-      </div>
+      <div className="h-1 rounded bg-gradient-to-r from-[#0b1a3a] via-[#2c78b8] to-[#3ba7d9]" />
 
-      <table className="w-full mt-5 border border-slate-800 border-collapse text-[12px]">
+      <table className="w-full mt-5 border border-slate-300 border-collapse text-[12px]">
         <tbody>
           <tr>
-            <td className="border border-slate-800 p-2 w-16 font-bold">M/S:</td>
-            <td className="border border-slate-800 p-2 font-semibold">{c.company || c.name || "-"}</td>
-            <td className="border border-slate-800 p-2 w-24 font-bold">Invoice #</td>
-            <td className="border border-slate-800 p-2 text-center font-semibold">{doc.number}</td>
+            <td className="border border-slate-300 p-2 w-16 font-bold bg-slate-50">M/S:</td>
+            <td className="border border-slate-300 p-2 font-semibold">{c.company || c.name || "-"}</td>
+            <td className="border border-slate-300 p-2 w-24 font-bold bg-slate-50">Invoice #</td>
+            <td className="border border-slate-300 p-2 text-center font-semibold text-[#0b1a3a]">{doc.number}</td>
           </tr>
           <tr>
-            <td className="border border-slate-800 p-2 font-bold" rowSpan={3}></td>
-            <td className="border border-slate-800 p-2" rowSpan={3}>
+            <td className="border border-slate-300 p-2 font-bold bg-slate-50" rowSpan={3}></td>
+            <td className="border border-slate-300 p-2" rowSpan={3}>
               {c.address}<br />{[c.city, c.country].filter(Boolean).join(", ")}
               {(c.ntn || c.strn) && <><br />{c.ntn && <>NTN: {c.ntn}  </>}{c.strn && <>STRN: {c.strn}</>}</>}
             </td>
-            <td className="border border-slate-800 p-2 font-bold">Date:</td>
-            <td className="border border-slate-800 p-2 text-center">{new Date(doc.date).toLocaleDateString("en-GB")}</td>
+            <td className="border border-slate-300 p-2 font-bold bg-slate-50">Date:</td>
+            <td className="border border-slate-300 p-2 text-center">{new Date(doc.date).toLocaleDateString("en-GB")}</td>
           </tr>
           <tr>
-            <td className="border border-slate-800 p-2 font-bold">P.O #</td>
-            <td className="border border-slate-800 p-2 text-center">{doc.po_number || "-"}</td>
+            <td className="border border-slate-300 p-2 font-bold bg-slate-50">P.O #</td>
+            <td className="border border-slate-300 p-2 text-center">{doc.po_number || "-"}</td>
           </tr>
           <tr>
-            <td className="border border-slate-800 p-2 font-bold">Due:</td>
-            <td className="border border-slate-800 p-2 text-center">{doc.due_date ? new Date(doc.due_date).toLocaleDateString("en-GB") : "-"}</td>
+            <td className="border border-slate-300 p-2 font-bold bg-slate-50">Due:</td>
+            <td className="border border-slate-300 p-2 text-center">{doc.due_date ? new Date(doc.due_date).toLocaleDateString("en-GB") : "-"}</td>
           </tr>
         </tbody>
       </table>
 
-      <table className="w-full mt-4 border border-slate-800 border-collapse text-[12px]">
+      <table className="w-full mt-4 border border-slate-300 border-collapse text-[12px]">
         <thead>
-          <tr className="bg-slate-100">
-            <th className="border border-slate-800 p-2 w-12">Sr. No.</th>
-            <th className="border border-slate-800 p-2 text-left">DESCRIPTION</th>
-            <th className="border border-slate-800 p-2 w-20">Quantity</th>
-            <th className="border border-slate-800 p-2 w-24">Unit Price (Rs.)</th>
-            <th className="border border-slate-800 p-2 w-24">Value for Sales Tax (Rs.)</th>
-            <th className="border border-slate-800 p-2 w-20">Sales Tax {doc.tax_rate}%</th>
-            <th className="border border-slate-800 p-2 w-28">Value Including Sales Tax</th>
+          <tr className="bg-[#0b1a3a] text-white">
+            <th className="border border-[#0b1a3a] p-2 w-12">Sr. No.</th>
+            <th className="border border-[#0b1a3a] p-2 text-left">DESCRIPTION</th>
+            <th className="border border-[#0b1a3a] p-2 w-20">Quantity</th>
+            <th className="border border-[#0b1a3a] p-2 w-24">Unit Price (Rs.)</th>
+            <th className="border border-[#0b1a3a] p-2 w-24">Value for Sales Tax (Rs.)</th>
+            <th className="border border-[#0b1a3a] p-2 w-20">Sales Tax {doc.tax_rate}%</th>
+            <th className="border border-[#0b1a3a] p-2 w-28">Value Including Sales Tax</th>
           </tr>
         </thead>
         <tbody>
@@ -180,29 +189,29 @@ export function InvoicePrint({ doc, items, settings }: { doc: Doc; items: Item[]
             const tax = +(line * (doc.tax_rate / 100)).toFixed(2);
             return (
               <tr key={i} className="align-top">
-                <td className="border border-slate-800 p-2 text-center">{i + 1}</td>
-                <td className="border border-slate-800 p-2">
+                <td className="border border-slate-300 p-2 text-center">{i + 1}</td>
+                <td className="border border-slate-300 p-2">
                   <div className="font-semibold">{it.description}</div>
                   {it.detail && <div className="text-[11px] text-slate-600 whitespace-pre-wrap">{it.detail}</div>}
                 </td>
-                <td className="border border-slate-800 p-2 text-center">{it.quantity}</td>
-                <td className="border border-slate-800 p-2 text-right">{Number(it.unit_price).toLocaleString()}</td>
-                <td className="border border-slate-800 p-2 text-right">{line.toLocaleString()}</td>
-                <td className="border border-slate-800 p-2 text-right">{tax.toLocaleString()}</td>
-                <td className="border border-slate-800 p-2 text-right">{(line + tax).toLocaleString()}</td>
+                <td className="border border-slate-300 p-2 text-center">{it.quantity}</td>
+                <td className="border border-slate-300 p-2 text-right">{Number(it.unit_price).toLocaleString()}</td>
+                <td className="border border-slate-300 p-2 text-right">{line.toLocaleString()}</td>
+                <td className="border border-slate-300 p-2 text-right">{tax.toLocaleString()}</td>
+                <td className="border border-slate-300 p-2 text-right">{(line + tax).toLocaleString()}</td>
               </tr>
             );
           })}
           {Array.from({ length: Math.max(0, 6 - items.length) }).map((_, i) => (
-            <tr key={`e${i}`}><td className="border border-slate-800 p-3"></td><td className="border border-slate-800"></td><td className="border border-slate-800"></td><td className="border border-slate-800"></td><td className="border border-slate-800"></td><td className="border border-slate-800"></td><td className="border border-slate-800"></td></tr>
+            <tr key={`e${i}`}><td className="border border-slate-300 p-3"></td><td className="border border-slate-300"></td><td className="border border-slate-300"></td><td className="border border-slate-300"></td><td className="border border-slate-300"></td><td className="border border-slate-300"></td><td className="border border-slate-300"></td></tr>
           ))}
-          <tr className="bg-slate-100 font-bold">
-            <td className="border border-slate-800 p-2 text-center" colSpan={2}>TOTAL =</td>
-            <td className="border border-slate-800 p-2 text-center">{items.reduce((s, it) => s + Number(it.quantity || 0), 0)}</td>
-            <td className="border border-slate-800 p-2"></td>
-            <td className="border border-slate-800 p-2 text-right">{doc.subtotal.toLocaleString()}</td>
-            <td className="border border-slate-800 p-2 text-right">{doc.tax_amount.toLocaleString()}</td>
-            <td className="border border-slate-800 p-2 text-right">{doc.total.toLocaleString()}</td>
+          <tr className="bg-[#e8eef7] font-bold text-[#0b1a3a]">
+            <td className="border border-slate-300 p-2 text-center" colSpan={2}>TOTAL =</td>
+            <td className="border border-slate-300 p-2 text-center">{items.reduce((s, it) => s + Number(it.quantity || 0), 0)}</td>
+            <td className="border border-slate-300 p-2"></td>
+            <td className="border border-slate-300 p-2 text-right">{doc.subtotal.toLocaleString()}</td>
+            <td className="border border-slate-300 p-2 text-right">{doc.tax_amount.toLocaleString()}</td>
+            <td className="border border-slate-300 p-2 text-right">{doc.total.toLocaleString()}</td>
           </tr>
         </tbody>
       </table>
