@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { LayoutGrid, Package, Layers, Wrench, Plus, Pencil, Trash2, X, Search, Upload, ChevronLeft, FolderOpen } from "lucide-react";
+import { LayoutGrid, Package, Layers, Wrench, Plus, Pencil, Trash2, X, Search, Upload, ChevronLeft, FolderOpen, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { requireSession, LogoutButton } from "@/lib/auth";
