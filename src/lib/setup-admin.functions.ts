@@ -10,7 +10,7 @@ export const hasUsers = createServerFn({ method: "GET" })
   });
 
 export const createFirstAdmin = createServerFn({ method: "POST" })
-  .inputValidator((data) =>
+  .validator((data: unknown) =>
     z
       .object({
         email: z.string().email(),
@@ -36,3 +36,4 @@ export const createFirstAdmin = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { email: data.email };
   });
+

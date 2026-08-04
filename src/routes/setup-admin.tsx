@@ -30,7 +30,7 @@ function SetupAdminPage() {
     e.preventDefault();
     setBusy(true);
     try {
-      await createFirstAdmin({ email: email.trim(), password });
+      await createFirstAdmin({ data: { email: email.trim(), password } });
       const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (error) throw error;
       toast.success("Admin account created. Welcome to Evertech.");
@@ -41,6 +41,7 @@ function SetupAdminPage() {
       setBusy(false);
     }
   }
+
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-[#050914] text-white px-6">
