@@ -35,7 +35,16 @@ function AdminPage() {
               <p className="text-xs text-white/50">Manage catalog · draft-safe workspace</p>
             </div>
           </div>
-          <LogoutButton className="text-sky-300" />
+          <div className="flex items-center gap-4">
+            <Link
+              to="/accounting"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md border border-white/10 text-xs font-semibold text-white/80 hover:text-white hover:bg-white/5"
+            >
+              <Building2 className="h-4 w-4" />
+              Accounting
+            </Link>
+            <LogoutButton className="text-sky-300" />
+          </div>
         </div>
       </header>
 
