@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as QuoteRouteImport } from './routes/quote'
 import { Route as ProductsRouteImport } from './routes/products'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AccountingRouteImport } from './routes/accounting'
 import { Route as IndexRouteImport } from './routes/index'
@@ -41,6 +42,11 @@ const QuoteRoute = QuoteRouteImport.update({
 const ProductsRoute = ProductsRouteImport.update({
   id: '/products',
   path: '/products',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -123,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/accounting': typeof AccountingRouteWithChildren
   '/admin': typeof AdminRoute
+  '/login': typeof LoginRoute
   '/products': typeof ProductsRouteWithChildren
   '/quote': typeof QuoteRoute
   '/services': typeof ServicesRouteWithChildren
@@ -142,6 +149,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/login': typeof LoginRoute
   '/quote': typeof QuoteRoute
   '/accounting/bills': typeof AccountingBillsRoute
   '/accounting/customers': typeof AccountingCustomersRoute
@@ -161,6 +169,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/accounting': typeof AccountingRouteWithChildren
   '/admin': typeof AdminRoute
+  '/login': typeof LoginRoute
   '/products': typeof ProductsRouteWithChildren
   '/quote': typeof QuoteRoute
   '/services': typeof ServicesRouteWithChildren
@@ -183,6 +192,7 @@ export interface FileRouteTypes {
     | '/'
     | '/accounting'
     | '/admin'
+    | '/login'
     | '/products'
     | '/quote'
     | '/services'
@@ -202,6 +212,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/login'
     | '/quote'
     | '/accounting/bills'
     | '/accounting/customers'
@@ -220,6 +231,7 @@ export interface FileRouteTypes {
     | '/'
     | '/accounting'
     | '/admin'
+    | '/login'
     | '/products'
     | '/quote'
     | '/services'
@@ -241,6 +253,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountingRoute: typeof AccountingRouteWithChildren
   AdminRoute: typeof AdminRoute
+  LoginRoute: typeof LoginRoute
   ProductsRoute: typeof ProductsRouteWithChildren
   QuoteRoute: typeof QuoteRoute
   ServicesRoute: typeof ServicesRouteWithChildren
@@ -267,6 +280,13 @@ declare module '@tanstack/react-router' {
       path: '/products'
       fullPath: '/products'
       preLoaderRoute: typeof ProductsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -435,6 +455,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountingRoute: AccountingRouteWithChildren,
   AdminRoute: AdminRoute,
+  LoginRoute: LoginRoute,
   ProductsRoute: ProductsRouteWithChildren,
   QuoteRoute: QuoteRoute,
   ServicesRoute: ServicesRouteWithChildren,
