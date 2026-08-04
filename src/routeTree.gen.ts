@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SetupAdminRouteImport } from './routes/setup-admin'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as QuoteRouteImport } from './routes/quote'
 import { Route as ProductsRouteImport } from './routes/products'
@@ -29,6 +30,11 @@ import { Route as AccountingInvoicesRouteImport } from './routes/accounting.invo
 import { Route as AccountingCustomersRouteImport } from './routes/accounting.customers'
 import { Route as AccountingBillsRouteImport } from './routes/accounting.bills'
 
+const SetupAdminRoute = SetupAdminRouteImport.update({
+  id: '/setup-admin',
+  path: '/setup-admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ServicesRoute = ServicesRouteImport.update({
   id: '/services',
   path: '/services',
@@ -133,6 +139,7 @@ export interface FileRoutesByFullPath {
   '/products': typeof ProductsRouteWithChildren
   '/quote': typeof QuoteRoute
   '/services': typeof ServicesRouteWithChildren
+  '/setup-admin': typeof SetupAdminRoute
   '/accounting/bills': typeof AccountingBillsRoute
   '/accounting/customers': typeof AccountingCustomersRoute
   '/accounting/invoices': typeof AccountingInvoicesRoute
@@ -151,6 +158,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/login': typeof LoginRoute
   '/quote': typeof QuoteRoute
+  '/setup-admin': typeof SetupAdminRoute
   '/accounting/bills': typeof AccountingBillsRoute
   '/accounting/customers': typeof AccountingCustomersRoute
   '/accounting/invoices': typeof AccountingInvoicesRoute
@@ -173,6 +181,7 @@ export interface FileRoutesById {
   '/products': typeof ProductsRouteWithChildren
   '/quote': typeof QuoteRoute
   '/services': typeof ServicesRouteWithChildren
+  '/setup-admin': typeof SetupAdminRoute
   '/accounting/bills': typeof AccountingBillsRoute
   '/accounting/customers': typeof AccountingCustomersRoute
   '/accounting/invoices': typeof AccountingInvoicesRoute
@@ -196,6 +205,7 @@ export interface FileRouteTypes {
     | '/products'
     | '/quote'
     | '/services'
+    | '/setup-admin'
     | '/accounting/bills'
     | '/accounting/customers'
     | '/accounting/invoices'
@@ -214,6 +224,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/login'
     | '/quote'
+    | '/setup-admin'
     | '/accounting/bills'
     | '/accounting/customers'
     | '/accounting/invoices'
@@ -235,6 +246,7 @@ export interface FileRouteTypes {
     | '/products'
     | '/quote'
     | '/services'
+    | '/setup-admin'
     | '/accounting/bills'
     | '/accounting/customers'
     | '/accounting/invoices'
@@ -257,10 +269,18 @@ export interface RootRouteChildren {
   ProductsRoute: typeof ProductsRouteWithChildren
   QuoteRoute: typeof QuoteRoute
   ServicesRoute: typeof ServicesRouteWithChildren
+  SetupAdminRoute: typeof SetupAdminRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/setup-admin': {
+      id: '/setup-admin'
+      path: '/setup-admin'
+      fullPath: '/setup-admin'
+      preLoaderRoute: typeof SetupAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/services': {
       id: '/services'
       path: '/services'
@@ -459,6 +479,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProductsRoute: ProductsRouteWithChildren,
   QuoteRoute: QuoteRoute,
   ServicesRoute: ServicesRouteWithChildren,
+  SetupAdminRoute: SetupAdminRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
