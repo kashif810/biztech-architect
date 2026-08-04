@@ -1,7 +1,10 @@
 import { createFileRoute, Outlet, Link, useRouterState } from "@tanstack/react-router";
 import { LayoutGrid, Users, Truck, FileText, ShoppingCart, Receipt, Wallet, Settings, ClipboardList } from "lucide-react";
+import { requireSession, LogoutButton } from "@/lib/auth";
 
 export const Route = createFileRoute("/accounting")({
+  ssr: false,
+  beforeLoad: requireSession,
   head: () => ({ meta: [{ title: "Accounting — Evertech" }, { name: "robots", content: "noindex" }] }),
   component: AccountingLayout,
 });
@@ -43,8 +46,8 @@ function AccountingLayout() {
             );
           })}
         </nav>
-        <div className="p-4 border-t border-slate-200 text-[11px] text-slate-500">
-          No authentication · internal use only
+        <div className="p-4 border-t border-slate-200 text-slate-600">
+          <LogoutButton />
         </div>
       </aside>
       <main className="flex-1 min-w-0">

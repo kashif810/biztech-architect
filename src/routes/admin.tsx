@@ -3,8 +3,11 @@ import { useEffect, useMemo, useState } from "react";
 import { LayoutGrid, Package, Layers, Wrench, Plus, Pencil, Trash2, X, Search, Upload, ChevronLeft, FolderOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { requireSession, LogoutButton } from "@/lib/auth";
 
 export const Route = createFileRoute("/admin")({
+  ssr: false,
+  beforeLoad: requireSession,
   head: () => ({ meta: [{ title: "Admin — Evertech" }, { name: "robots", content: "noindex" }] }),
   component: AdminPage,
 });
@@ -32,9 +35,7 @@ function AdminPage() {
               <p className="text-xs text-white/50">Manage catalog · draft-safe workspace</p>
             </div>
           </div>
-          <div className="text-xs px-3 py-2 rounded-full border border-sky-500/40 text-sky-300 bg-sky-500/5">
-            Auth pending · secure before launch
-          </div>
+          <LogoutButton className="text-sky-300" />
         </div>
       </header>
 
