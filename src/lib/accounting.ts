@@ -8,6 +8,8 @@ export type Item = {
   unit_price: number;
   amount: number;
   sort_order: number;
+  /** Optional per-line tax rate; falls back to the document tax rate. */
+  tax_rate?: number | null;
 };
 
 export type CustomerSnapshot = {
@@ -37,9 +39,17 @@ export function fmtDate(d: string | null | undefined): string {
   return dt.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 }
 
+export function itemTaxRate(it: Item, docRate: number): number {
+  return it.tax_rate === null || it.tax_rate === undefined ? Number(docRate) || 0 : Number(it.tax_rate) || 0;
+}
+
+export function itemTax(it: Item, docRate: number): number {
+  return +(Number(it.amount || 0) * itemTaxRate(it, docRate) / 100).toFixed(2);
+}
+
 export function computeTotals(items: Item[], taxRate: number) {
   const subtotal = items.reduce((s, it) => s + Number(it.amount || 0), 0);
-  const tax_amount = +(subtotal * (Number(taxRate) || 0) / 100).toFixed(2);
+  const tax_amount = +items.reduce((s, it) => s + itemTax(it, taxRate), 0).toFixed(2);
   const total = +(subtotal + tax_amount).toFixed(2);
   return { subtotal: +subtotal.toFixed(2), tax_amount, total };
 }

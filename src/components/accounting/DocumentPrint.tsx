@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import evertechLogo from "@/assets/evertech-logo.png";
+import stampAsset from "@/assets/evertech-stamp.png.asset.json";
+import signAsset from "@/assets/evertech-signature.png.asset.json";
 import { fmtDate, fmtMoney, taxLabel } from "@/lib/accounting";
 
 type Settings = {
@@ -29,7 +31,7 @@ type Doc = {
   terms?: string;
 };
 
-type Item = { description: string; detail?: string; quantity: number; unit_price: number; amount: number };
+type Item = { description: string; detail?: string; quantity: number; unit_price: number; amount: number; tax_rate?: number | null };
 
 const A4_W = 794; // A4 width @96dpi
 const A4_H = 1123;
@@ -217,18 +219,19 @@ export function InvoicePrint({ doc, items, settings }: { doc: Doc; items: Item[]
         <thead>
           <tr className="bg-slate-100 text-black">
             <th className="border border-slate-400 p-2 w-12">Sr. No.</th>
-            <th className="border border-slate-400 p-2 text-left">DESCRIPTION</th>
-            <th className="border border-slate-400 p-2 w-20">Quantity</th>
+            <th className="border border-slate-400 p-2 text-left">Description</th>
+            <th className="border border-slate-400 p-2 w-16">Qty</th>
             <th className="border border-slate-400 p-2 w-24">Unit Price (Rs.)</th>
-            <th className="border border-slate-400 p-2 w-24">Value for Sales Tax (Rs.)</th>
-            <th className="border border-slate-400 p-2 w-20">{taxLabel(doc.tax_rate)}</th>
-            <th className="border border-slate-400 p-2 w-28">Value Including Sales Tax</th>
+            <th className="border border-slate-400 p-2 w-24">Taxable Value (Rs.)</th>
+            <th className="border border-slate-400 p-2 w-24">{taxLabel(doc.tax_rate)} (Rs.)</th>
+            <th className="border border-slate-400 p-2 w-28">Total Amount (Rs.)</th>
           </tr>
         </thead>
         <tbody>
           {items.map((it, i) => {
             const line = Number(it.amount || 0);
-            const tax = +(line * (doc.tax_rate / 100)).toFixed(2);
+            const rate = it.tax_rate === null || it.tax_rate === undefined ? Number(doc.tax_rate) || 0 : Number(it.tax_rate) || 0;
+            const tax = +(line * (rate / 100)).toFixed(2);
             return (
               <tr key={i} className="pdf-block align-top">
                 <td className="border border-slate-300 p-2 text-center">{i + 1}</td>
@@ -239,7 +242,7 @@ export function InvoicePrint({ doc, items, settings }: { doc: Doc; items: Item[]
                 <td className="border border-slate-300 p-2 text-center">{it.quantity}</td>
                 <td className="border border-slate-300 p-2 text-right">{Number(it.unit_price).toLocaleString()}</td>
                 <td className="border border-slate-300 p-2 text-right">{line.toLocaleString()}</td>
-                <td className="border border-slate-300 p-2 text-right">{tax.toLocaleString()}</td>
+                <td className="border border-slate-300 p-2 text-right">{tax.toLocaleString()}{rate !== Number(doc.tax_rate) && <span className="text-[10px] text-slate-500"> ({rate}%)</span>}</td>
                 <td className="border border-slate-300 p-2 text-right">{(line + tax).toLocaleString()}</td>
               </tr>
             );
@@ -265,10 +268,19 @@ export function InvoicePrint({ doc, items, settings }: { doc: Doc; items: Item[]
         </div>
       )}
 
-      <div className="pdf-block mt-10 flex justify-between text-[12px]">
-        <div><span className="font-bold">Signature & Stamp</span></div>
-        <div className="text-right">For {company}</div>
+      <div className="pdf-block mt-8 flex items-end justify-between text-[12px]">
+        <div className="text-[11px] max-w-[62%] text-slate-700 leading-snug">
+          This is a computer-generated Sales Tax Invoice. It is valid without a handwritten signature or physical company stamp.
+        </div>
+        <div className="flex items-end gap-3">
+          <div className="text-center">
+            <img src={signAsset.url} alt="Authorised signature" className="h-16 object-contain" />
+            <div className="mt-1 border-t border-slate-400 pt-1 text-[11px]">Authorised Signatory</div>
+          </div>
+          <img src={stampAsset.url} alt="Evertech Corporation partner stamp" className="h-24 w-24 object-contain" />
+        </div>
       </div>
+      <div className="pdf-block mt-2 text-right text-[12px] font-semibold">For {company}</div>
     </div>
     </A4Sheet>
   );

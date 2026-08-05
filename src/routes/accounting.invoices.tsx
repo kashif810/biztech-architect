@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Plus, Trash2, Eye, Wallet, Pencil } from "lucide-react";
 import { Fld, Modal } from "./accounting.customers";
 import { ItemForm, PrintModal } from "./accounting.quotations";
-import { computeTotals, emptyCustomer, fmtDate, fmtMoney, nextDocNumber, addDays, type Item, type CustomerSnapshot } from "@/lib/accounting";
+import { computeTotals, emptyCustomer, fmtDate, fmtMoney, nextDocNumber, addDays, itemTaxRate, itemTax, type Item, type CustomerSnapshot } from "@/lib/accounting";
 
 export const Route = createFileRoute("/accounting/invoices")({ component: InvoicesPage });
 
@@ -103,7 +103,7 @@ function InvoiceEditor({ existing, onClose, onSaved }: { existing: Inv | null; o
       if (s.data && !existing) { setTaxRate(Number(s.data.default_tax_rate || 16)); setDueDate(addDays(new Date().toISOString().slice(0, 10), Number(s.data.default_credit_days || 30))); }
       if (existing) {
         const { data: its } = await (supabase as any).from("invoice_items").select("*").eq("invoice_id", existing.id).order("sort_order");
-        if (its && its.length) setItems(its.map((it: any, i: number) => ({ id: it.id, description: it.description || "", detail: it.detail || "", quantity: Number(it.quantity), unit_price: Number(it.unit_price), amount: Number(it.amount), sort_order: i })));
+        if (its && its.length) setItems(its.map((it: any, i: number) => ({ id: it.id, description: it.description || "", detail: it.detail || "", quantity: Number(it.quantity), unit_price: Number(it.unit_price), amount: Number(it.amount), tax_rate: it.tax_rate === null || it.tax_rate === undefined ? null : Number(it.tax_rate), sort_order: i })));
       }
     })();
   }, [existing]);
@@ -136,7 +136,7 @@ function InvoiceEditor({ existing, onClose, onSaved }: { existing: Inv | null; o
         }).eq("id", existing.id);
         if (error) throw error;
         await (supabase as any).from("invoice_items").delete().eq("invoice_id", existing.id);
-        if (clean.length) await (supabase as any).from("invoice_items").insert(clean.map((it, idx) => ({ invoice_id: existing.id, description: it.description, detail: it.detail, quantity: it.quantity, unit_price: it.unit_price, amount: it.amount, sort_order: idx })));
+        if (clean.length) await (supabase as any).from("invoice_items").insert(clean.map((it, idx) => ({ invoice_id: existing.id, description: it.description, detail: it.detail, quantity: it.quantity, unit_price: it.unit_price, amount: it.amount, tax_rate: itemTaxRate(it, taxRate), tax_amount: itemTax(it, taxRate), sort_order: idx })));
         toast.success(`Invoice ${existing.number} updated`);
       } else {
         const number = await nextDocNumber("invoice");
@@ -146,7 +146,7 @@ function InvoiceEditor({ existing, onClose, onSaved }: { existing: Inv | null; o
           notes, terms, status: "unpaid",
         }).select().single();
         if (error) throw error;
-        if (clean.length) await (supabase as any).from("invoice_items").insert(clean.map((it, idx) => ({ invoice_id: inv.id, description: it.description, detail: it.detail, quantity: it.quantity, unit_price: it.unit_price, amount: it.amount, sort_order: idx })));
+        if (clean.length) await (supabase as any).from("invoice_items").insert(clean.map((it, idx) => ({ invoice_id: inv.id, description: it.description, detail: it.detail, quantity: it.quantity, unit_price: it.unit_price, amount: it.amount, tax_rate: itemTaxRate(it, taxRate), tax_amount: itemTax(it, taxRate), sort_order: idx })));
         toast.success(`Invoice ${number} saved`);
       }
       onSaved();
