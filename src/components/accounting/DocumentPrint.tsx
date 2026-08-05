@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import evertechLogo from "@/assets/evertech-logo.png";
+import stampAsset from "@/assets/evertech-stamp.png.asset.json";
+import signAsset from "@/assets/evertech-signature.png.asset.json";
 import { fmtDate, fmtMoney, taxLabel } from "@/lib/accounting";
 
 type Settings = {
@@ -29,7 +31,7 @@ type Doc = {
   terms?: string;
 };
 
-type Item = { description: string; detail?: string; quantity: number; unit_price: number; amount: number };
+type Item = { description: string; detail?: string; quantity: number; unit_price: number; amount: number; tax_rate?: number | null };
 
 const A4_W = 794; // A4 width @96dpi
 const A4_H = 1123;
