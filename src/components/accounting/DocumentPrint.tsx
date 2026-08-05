@@ -107,13 +107,20 @@ export function QuotationPrint({ doc, items, settings }: { doc: Doc; items: Item
           {(c.city || c.country) && <div>{[c.city, c.country].filter(Boolean).join(", ")}</div>}
           {c.phone && <div>Ph: {c.phone}</div>}
         </div>
-        <div className="text-sm">
-          <Row label="Estimate Number:" value={doc.number} bold />
-          <Row label="Estimate Date:" value={fmtDate(doc.date)} />
-          {doc.valid_until && <Row label="Valid Until:" value={fmtDate(doc.valid_until)} />}
-          <div className="mt-2 bg-slate-100 -mx-2 px-2 py-2 flex justify-between">
-            <span className="font-bold text-slate-700">Grand Total (PKR):</span>
-            <span className="font-bold">{fmtMoney(doc.total)}</span>
+        <div className="text-sm justify-self-end">
+          <div className="grid grid-cols-[auto_auto] gap-x-3 gap-y-1 items-baseline">
+            <span className="text-right font-bold text-slate-700">Estimate Number:</span>
+            <span className="text-left">{doc.number}</span>
+            <span className="text-right font-bold text-slate-700">Estimate Date:</span>
+            <span className="text-left">{fmtDate(doc.date)}</span>
+            {doc.valid_until && (
+              <>
+                <span className="text-right font-bold text-slate-700">Valid Until:</span>
+                <span className="text-left">{fmtDate(doc.valid_until)}</span>
+              </>
+            )}
+            <span className="text-right font-bold text-slate-700 bg-slate-100 py-1.5 pl-2">Grand Total (PKR):</span>
+            <span className="text-left font-bold bg-slate-100 py-1.5 pr-2">{fmtMoney(doc.total)}</span>
           </div>
         </div>
       </div>
