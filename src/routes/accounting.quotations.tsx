@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus, Trash2, Printer, Eye, X, Pencil, Download, MessageCircle } from "lucide-react";
 import { Fld, Modal } from "./accounting.customers";
-import { computeTotals, emptyCustomer, fmtDate, fmtMoney, nextDocNumber, addDays, TAX_PRESETS, TAX_OPTIONS, taxLabel, waLink, docMessage, type Item, type CustomerSnapshot } from "@/lib/accounting";
+import { computeTotals, emptyCustomer, fmtDate, fmtMoney, nextDocNumber, addDays, TAX_PRESETS, TAX_OPTIONS, taxLabel, itemTaxRate, itemTax, waLink, docMessage, type Item, type CustomerSnapshot } from "@/lib/accounting";
 import { QuotationPrint, InvoicePrint } from "@/components/accounting/DocumentPrint";
 
 export const Route = createFileRoute("/accounting/quotations")({ component: QuotationsPage });
@@ -93,7 +93,7 @@ function QuoteEditor({ existing, onClose, onSaved }: { existing: Q | null; onClo
       if (s.data && !existing) { setTerms(s.data.quotation_terms || ""); }
       if (existing) {
         const { data: its } = await (supabase as any).from("quotation_items").select("*").eq("quotation_id", existing.id).order("sort_order");
-        if (its && its.length) setItems(its.map((it: any, i: number) => ({ id: it.id, description: it.description || "", detail: it.detail || "", quantity: Number(it.quantity), unit_price: Number(it.unit_price), amount: Number(it.amount), sort_order: i })));
+        if (its && its.length) setItems(its.map((it: any, i: number) => ({ id: it.id, description: it.description || "", detail: it.detail || "", quantity: Number(it.quantity), unit_price: Number(it.unit_price), amount: Number(it.amount), tax_rate: it.tax_rate === null || it.tax_rate === undefined ? null : Number(it.tax_rate), sort_order: i })));
       }
     })();
   }, [existing]);
@@ -130,7 +130,7 @@ function QuoteEditor({ existing, onClose, onSaved }: { existing: Q | null; onClo
         if (error) throw error;
         q = data;
         await (supabase as any).from("quotation_items").delete().eq("quotation_id", existing.id);
-        if (cleanItems.length) await (supabase as any).from("quotation_items").insert(cleanItems.map((it, idx) => ({ quotation_id: existing.id, description: it.description, detail: it.detail, quantity: it.quantity, unit_price: it.unit_price, amount: it.amount, sort_order: idx })));
+        if (cleanItems.length) await (supabase as any).from("quotation_items").insert(cleanItems.map((it, idx) => ({ quotation_id: existing.id, description: it.description, detail: it.detail, quantity: it.quantity, unit_price: it.unit_price, amount: it.amount, tax_rate: itemTaxRate(it, taxRate), tax_amount: itemTax(it, taxRate), sort_order: idx })));
 
         // Sync linked invoice if it exists and is still unpaid
         const { data: linked } = await (supabase as any).from("invoices").select("id,paid_amount").eq("quotation_id", existing.id).maybeSingle();
@@ -140,7 +140,7 @@ function QuoteEditor({ existing, onClose, onSaved }: { existing: Q | null; onClo
             subtotal: totals.subtotal, tax_rate: taxRate, tax_amount: totals.tax_amount, total: totals.total, balance: totals.total,
           }).eq("id", linked.id);
           await (supabase as any).from("invoice_items").delete().eq("invoice_id", linked.id);
-          if (cleanItems.length) await (supabase as any).from("invoice_items").insert(cleanItems.map((it, idx) => ({ invoice_id: linked.id, description: it.description, detail: it.detail, quantity: it.quantity, unit_price: it.unit_price, amount: it.amount, sort_order: idx })));
+          if (cleanItems.length) await (supabase as any).from("invoice_items").insert(cleanItems.map((it, idx) => ({ invoice_id: linked.id, description: it.description, detail: it.detail, quantity: it.quantity, unit_price: it.unit_price, amount: it.amount, tax_rate: itemTaxRate(it, taxRate), tax_amount: itemTax(it, taxRate), sort_order: idx })));
         }
         toast.success(`Quotation ${q.number} updated`);
       } else {
@@ -151,7 +151,7 @@ function QuoteEditor({ existing, onClose, onSaved }: { existing: Q | null; onClo
         }).select().single();
         if (error) throw error;
         q = data;
-        if (cleanItems.length) await (supabase as any).from("quotation_items").insert(cleanItems.map((it, idx) => ({ quotation_id: q.id, description: it.description, detail: it.detail, quantity: it.quantity, unit_price: it.unit_price, amount: it.amount, sort_order: idx })));
+        if (cleanItems.length) await (supabase as any).from("quotation_items").insert(cleanItems.map((it, idx) => ({ quotation_id: q.id, description: it.description, detail: it.detail, quantity: it.quantity, unit_price: it.unit_price, amount: it.amount, tax_rate: itemTaxRate(it, taxRate), tax_amount: itemTax(it, taxRate), sort_order: idx })));
 
         if (autoInvoice) {
           const invNumber = await nextDocNumber("invoice");
@@ -164,7 +164,7 @@ function QuoteEditor({ existing, onClose, onSaved }: { existing: Q | null; onClo
             notes, terms,
           }).select().single();
           if (ierr) throw ierr;
-          if (cleanItems.length) await (supabase as any).from("invoice_items").insert(cleanItems.map((it, idx) => ({ invoice_id: inv.id, description: it.description, detail: it.detail, quantity: it.quantity, unit_price: it.unit_price, amount: it.amount, sort_order: idx })));
+          if (cleanItems.length) await (supabase as any).from("invoice_items").insert(cleanItems.map((it, idx) => ({ invoice_id: inv.id, description: it.description, detail: it.detail, quantity: it.quantity, unit_price: it.unit_price, amount: it.amount, tax_rate: itemTaxRate(it, taxRate), tax_amount: itemTax(it, taxRate), sort_order: idx })));
           await (supabase as any).from("quotations").update({ status: "invoiced" }).eq("id", q.id);
           toast.success(`Quotation ${number} + Invoice ${invNumber} created`);
         } else {
@@ -263,7 +263,7 @@ export function ItemForm(p: {
       <div className="pt-4 border-t border-slate-200">
         <div className="flex items-center justify-between mb-2">
           <div className="text-sm font-semibold">Line Items</div>
-          <button type="button" onClick={() => p.setItems([...p.items, { description: "", detail: "", quantity: 1, unit_price: 0, amount: 0, sort_order: p.items.length }])} className="text-xs text-blue-600 hover:underline flex items-center gap-1"><Plus className="h-3 w-3"/>Add row</button>
+          <button type="button" onClick={() => p.setItems([...p.items, { description: "", detail: "", quantity: 1, unit_price: 0, amount: 0, tax_rate: null, sort_order: p.items.length }])} className="text-xs text-blue-600 hover:underline flex items-center gap-1"><Plus className="h-3 w-3"/>Add row</button>
         </div>
         <div className="space-y-2">
           {p.items.map((it, i) => (
@@ -272,8 +272,20 @@ export function ItemForm(p: {
                 <input placeholder="Item name" value={it.description} onChange={(e) => p.updItem(i, { description: e.target.value })} className="w-full px-2 py-1.5 rounded border border-slate-300 text-sm" />
                 <textarea placeholder="Specs / detail (optional)" value={it.detail} onChange={(e) => p.updItem(i, { detail: e.target.value })} rows={2} className="mt-1 w-full px-2 py-1.5 rounded border border-slate-300 text-xs" />
               </div>
-              <input type="number" placeholder="Qty" value={it.quantity} onChange={(e) => p.updItem(i, { quantity: Number(e.target.value) })} className="col-span-2 px-2 py-1.5 rounded border border-slate-300 text-sm" />
+              <input type="number" placeholder="Qty" value={it.quantity} onChange={(e) => p.updItem(i, { quantity: Number(e.target.value) })} className="col-span-1 px-2 py-1.5 rounded border border-slate-300 text-sm" />
               <input type="number" placeholder="Unit price" value={it.unit_price} onChange={(e) => p.updItem(i, { unit_price: Number(e.target.value) })} className="col-span-2 px-2 py-1.5 rounded border border-slate-300 text-sm" />
+              <div className="col-span-1">
+                <select
+                  value={it.tax_rate === null || it.tax_rate === undefined ? "doc" : String(it.tax_rate)}
+                  onChange={(e) => p.updItem(i, { tax_rate: e.target.value === "doc" ? null : Number(e.target.value) })}
+                  className="w-full px-1 py-1.5 rounded border border-slate-300 text-xs"
+                  title="Tax for this line item"
+                >
+                  <option value="doc">Default ({p.taxRate}%)</option>
+                  {TAX_PRESETS.map((r) => <option key={r} value={r}>{r}%</option>)}
+                </select>
+                <div className="text-[10px] text-slate-500 mt-1 text-center">{fmtMoney(itemTax(it, p.taxRate))}</div>
+              </div>
               <div className="col-span-2 text-right py-1.5 text-sm font-semibold">{fmtMoney(it.amount)}</div>
               <button type="button" onClick={() => p.setItems(p.items.filter((_, idx) => idx !== i))} className="col-span-1 text-slate-400 hover:text-red-600 flex justify-center py-1.5"><Trash2 className="h-4 w-4"/></button>
             </div>
@@ -282,7 +294,7 @@ export function ItemForm(p: {
         <div className="mt-4 flex justify-end">
           <div className="w-72 text-sm space-y-1">
             <div className="flex justify-between"><span>Subtotal</span><span className="font-semibold">{fmtMoney(p.totals.subtotal)}</span></div>
-            <div className="flex justify-between"><span>{taxLabel(p.taxRate)}</span><span className="font-semibold">{fmtMoney(p.totals.tax_amount)}</span></div>
+            <div className="flex justify-between"><span>Tax</span><span className="font-semibold">{fmtMoney(p.totals.tax_amount)}</span></div>
             <div className="flex justify-between pt-2 border-t border-slate-300"><span className="font-bold">Total</span><span className="font-bold">{fmtMoney(p.totals.total)}</span></div>
           </div>
         </div>
