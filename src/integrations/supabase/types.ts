@@ -131,6 +131,8 @@ export type Database = {
           invoice_id: string
           quantity: number
           sort_order: number
+          tax_amount: number
+          tax_rate: number
           unit_price: number
         }
         Insert: {
@@ -141,6 +143,8 @@ export type Database = {
           invoice_id: string
           quantity?: number
           sort_order?: number
+          tax_amount?: number
+          tax_rate?: number
           unit_price?: number
         }
         Update: {
@@ -151,6 +155,8 @@ export type Database = {
           invoice_id?: string
           quantity?: number
           sort_order?: number
+          tax_amount?: number
+          tax_rate?: number
           unit_price?: number
         }
         Relationships: [
@@ -474,6 +480,8 @@ export type Database = {
           quantity: number
           quotation_id: string
           sort_order: number
+          tax_amount: number
+          tax_rate: number
           unit_price: number
         }
         Insert: {
@@ -484,6 +492,8 @@ export type Database = {
           quantity?: number
           quotation_id: string
           sort_order?: number
+          tax_amount?: number
+          tax_rate?: number
           unit_price?: number
         }
         Update: {
@@ -494,6 +504,8 @@ export type Database = {
           quantity?: number
           quotation_id?: string
           sort_order?: number
+          tax_amount?: number
+          tax_rate?: number
           unit_price?: number
         }
         Relationships: [
