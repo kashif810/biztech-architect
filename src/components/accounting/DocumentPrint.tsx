@@ -75,7 +75,7 @@ export function QuotationPrint({ doc, items, settings }: { doc: Doc; items: Item
   return (
     <A4Sheet>
     <div className="print-doc bg-white text-slate-900 p-10 text-[13px]">
-      <div className="flex items-start justify-between">
+      <div className="pdf-block flex items-start justify-between">
         <div className="flex items-center gap-4">
           <div className="h-16 w-16 rounded-lg bg-[#0b1a3a] flex items-center justify-center">
             <img src={evertechLogo} alt="EverTech Corporation" className="h-11 w-11 object-contain" />
@@ -98,7 +98,7 @@ export function QuotationPrint({ doc, items, settings }: { doc: Doc; items: Item
       </div>
       <div className="mt-4 h-1 rounded bg-gradient-to-r from-[#0b1a3a] via-[#2c78b8] to-[#3ba7d9]" />
 
-      <div className="mt-8 grid grid-cols-2 gap-8">
+      <div className="pdf-block mt-8 grid grid-cols-2 gap-8">
         <div>
           <div className="text-[11px] uppercase tracking-wider text-slate-400">Bill To</div>
           <div className="mt-1 font-bold">{c.company || c.name || "-"}</div>
@@ -107,13 +107,20 @@ export function QuotationPrint({ doc, items, settings }: { doc: Doc; items: Item
           {(c.city || c.country) && <div>{[c.city, c.country].filter(Boolean).join(", ")}</div>}
           {c.phone && <div>Ph: {c.phone}</div>}
         </div>
-        <div className="text-sm">
-          <Row label="Estimate Number:" value={doc.number} bold />
-          <Row label="Estimate Date:" value={fmtDate(doc.date)} />
-          {doc.valid_until && <Row label="Valid Until:" value={fmtDate(doc.valid_until)} />}
-          <div className="mt-2 bg-slate-100 -mx-2 px-2 py-2 flex justify-between">
-            <span className="font-bold text-slate-700">Grand Total (PKR):</span>
-            <span className="font-bold">{fmtMoney(doc.total)}</span>
+        <div className="text-sm justify-self-end">
+          <div className="grid grid-cols-[auto_auto] gap-x-3 gap-y-1 items-baseline">
+            <span className="text-right font-bold text-slate-700">Estimate Number:</span>
+            <span className="text-left">{doc.number}</span>
+            <span className="text-right font-bold text-slate-700">Estimate Date:</span>
+            <span className="text-left">{fmtDate(doc.date)}</span>
+            {doc.valid_until && (
+              <>
+                <span className="text-right font-bold text-slate-700">Valid Until:</span>
+                <span className="text-left">{fmtDate(doc.valid_until)}</span>
+              </>
+            )}
+            <span className="text-right font-bold text-slate-700 bg-slate-100 py-1.5 pl-2">Grand Total (PKR):</span>
+            <span className="text-left font-bold bg-slate-100 py-1.5 pr-2">{fmtMoney(doc.total)}</span>
           </div>
         </div>
       </div>
@@ -130,7 +137,7 @@ export function QuotationPrint({ doc, items, settings }: { doc: Doc; items: Item
         </thead>
         <tbody>
           {items.map((it, i) => (
-            <tr key={i} className="border-b border-slate-200 align-top">
+            <tr key={i} className="pdf-block border-b border-slate-200 align-top">
               <td className="px-3 py-3 font-bold">{it.description}</td>
               <td className="px-3 py-3 text-[12px] text-slate-600 whitespace-pre-wrap">{it.detail || "—"}</td>
               <td className="px-3 py-3 text-center">{it.quantity}</td>
@@ -141,7 +148,7 @@ export function QuotationPrint({ doc, items, settings }: { doc: Doc; items: Item
         </tbody>
       </table>
 
-      <div className="mt-6 flex justify-end">
+      <div className="pdf-block mt-6 flex justify-end">
         <div className="w-72 text-sm">
           <div className="flex justify-between py-1"><span>Subtotal:</span><span className="font-semibold">{fmtMoney(doc.subtotal)}</span></div>
           {doc.tax_rate > 0 && <div className="flex justify-between py-1"><span>{taxLabel(doc.tax_rate)}:</span><span className="font-semibold">{fmtMoney(doc.tax_amount)}</span></div>}
@@ -152,7 +159,7 @@ export function QuotationPrint({ doc, items, settings }: { doc: Doc; items: Item
       </div>
 
       {doc.terms && (
-        <div className="mt-8">
+        <div className="pdf-block mt-8">
           <div className="font-bold text-slate-800">Notes / Terms</div>
           <div className="text-[12px] text-slate-600 whitespace-pre-wrap mt-1">{doc.terms}</div>
         </div>
@@ -168,7 +175,7 @@ export function InvoicePrint({ doc, items, settings }: { doc: Doc; items: Item[]
   return (
     <A4Sheet>
     <div className="print-doc bg-white text-slate-900 p-10 text-[13px]">
-      <div className="text-center text-black">
+      <div className="pdf-block text-center text-black">
         <div className="text-[30px] font-black tracking-tight uppercase leading-tight">
           {company || "EVERTECH CORPORATION"}
         </div>
@@ -223,7 +230,7 @@ export function InvoicePrint({ doc, items, settings }: { doc: Doc; items: Item[]
             const line = Number(it.amount || 0);
             const tax = +(line * (doc.tax_rate / 100)).toFixed(2);
             return (
-              <tr key={i} className="align-top">
+              <tr key={i} className="pdf-block align-top">
                 <td className="border border-slate-300 p-2 text-center">{i + 1}</td>
                 <td className="border border-slate-300 p-2">
                   <div className="font-semibold">{it.description}</div>
@@ -240,7 +247,7 @@ export function InvoicePrint({ doc, items, settings }: { doc: Doc; items: Item[]
           {Array.from({ length: Math.max(0, 6 - items.length) }).map((_, i) => (
             <tr key={`e${i}`}><td className="border border-slate-300 p-3"></td><td className="border border-slate-300"></td><td className="border border-slate-300"></td><td className="border border-slate-300"></td><td className="border border-slate-300"></td><td className="border border-slate-300"></td><td className="border border-slate-300"></td></tr>
           ))}
-          <tr className="bg-slate-100 font-bold text-black">
+          <tr className="pdf-block bg-slate-100 font-bold text-black">
             <td className="border border-slate-300 p-2 text-center" colSpan={2}>TOTAL =</td>
             <td className="border border-slate-300 p-2 text-center">{items.reduce((s, it) => s + Number(it.quantity || 0), 0)}</td>
             <td className="border border-slate-300 p-2"></td>
@@ -252,26 +259,17 @@ export function InvoicePrint({ doc, items, settings }: { doc: Doc; items: Item[]
       </table>
 
       {settings.bank_details && (
-        <div className="mt-4 text-[12px]">
+        <div className="pdf-block mt-4 text-[12px]">
           <div className="font-bold">Bank Details:</div>
           <div className="whitespace-pre-wrap">{settings.bank_details}</div>
         </div>
       )}
 
-      <div className="mt-10 flex justify-between text-[12px]">
+      <div className="pdf-block mt-10 flex justify-between text-[12px]">
         <div><span className="font-bold">Signature & Stamp</span></div>
         <div className="text-right">For {company}</div>
       </div>
     </div>
     </A4Sheet>
-  );
-}
-
-function Row({ label, value, bold }: { label: string; value: string; bold?: boolean }) {
-  return (
-    <div className="flex justify-between py-0.5">
-      <span className="text-slate-600">{label}</span>
-      <span className={bold ? "font-bold" : ""}>{value}</span>
-    </div>
   );
 }

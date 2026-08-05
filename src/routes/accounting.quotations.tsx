@@ -332,22 +332,49 @@ export function PrintModal({ doc, kind, onClose, onEdit }: { doc: any; kind: "qu
     const prevTransform = el.style.transform;
     el.style.transform = "none"; // capture at full A4 size even when previewed scaled on mobile
     let canvas: HTMLCanvasElement;
+    let blockEdges: number[] = [];
+    let cssHeight = 0;
     try {
       canvas = await html2canvas(el, { scale: 3, backgroundColor: "#ffffff", width: 794, windowWidth: 794 });
+      const top = el.getBoundingClientRect().top;
+      cssHeight = el.getBoundingClientRect().height;
+      blockEdges = Array.from(el.querySelectorAll<HTMLElement>(".pdf-block")).map(
+        (b) => b.getBoundingClientRect().bottom - top,
+      );
     } finally {
       el.style.transform = prevTransform;
     }
     const pdf = new jsPDF({ unit: "pt", format: "a4", compress: true });
     const pw = pdf.internal.pageSize.getWidth();
     const ph = pdf.internal.pageSize.getHeight();
-    const imgH = (canvas.height * pw) / canvas.width;
-    const img = canvas.toDataURL("image/png");
-    let y = 0;
-    pdf.addImage(img, "PNG", 0, 0, pw, imgH, undefined, "FAST");
-    while (imgH - y > ph) {
-      y += ph;
-      pdf.addPage();
-      pdf.addImage(img, "PNG", 0, -y, pw, imgH, undefined, "FAST");
+    // Page height expressed in the same CSS pixels as the on-screen A4 sheet
+    const pageCss = (ph * 794) / pw;
+    const total = cssHeight || (canvas.height * 794) / canvas.width;
+    // Cut pages at whole-block boundaries so nothing is sliced in half
+    const cuts: number[] = [0];
+    let start = 0;
+    let guard = 0;
+    while (total - start > pageCss + 1 && guard++ < 50) {
+      const limit = start + pageCss;
+      const fits = blockEdges.filter((e) => e > start + 40 && e <= limit);
+      const next = fits.length ? Math.max(...fits) : limit;
+      cuts.push(next);
+      start = next;
+    }
+    const ratio = canvas.height / total; // device px per CSS px
+    for (let i = 0; i < cuts.length; i++) {
+      const from = Math.round(cuts[i] * ratio);
+      const to = Math.round((i + 1 < cuts.length ? cuts[i + 1] : total) * ratio);
+      const sliceH = Math.max(1, to - from);
+      const slice = document.createElement("canvas");
+      slice.width = canvas.width;
+      slice.height = sliceH;
+      const ctx = slice.getContext("2d")!;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, slice.width, slice.height);
+      ctx.drawImage(canvas, 0, from, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+      if (i > 0) pdf.addPage();
+      pdf.addImage(slice.toDataURL("image/png"), "PNG", 0, 0, pw, (sliceH * pw) / canvas.width, undefined, "FAST");
     }
     const filename = `${kind === "quotation" ? "Quotation" : "Invoice"}-${String(doc.number).replace(/\//g, "-")}.pdf`;
     return { pdf, filename };

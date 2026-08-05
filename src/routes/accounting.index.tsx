@@ -12,6 +12,7 @@ function DashboardPage() {
   const [stats, setStats] = useState({
     invoicesTotal: 0, invoicesPaid: 0, invoicesBalance: 0, invoiceCount: 0,
     quoteCount: 0, customerCount: 0, supplierBalance: 0, billCount: 0,
+    revenue: 0, expense: 0, profit: 0, margin: 0, expensePaid: 0,
   });
   const [recentInvoices, setRecentInvoices] = useState<any[]>([]);
   const [recentQuotes, setRecentQuotes] = useState<any[]>([]);
@@ -19,13 +20,17 @@ function DashboardPage() {
   useEffect(() => {
     (async () => {
       const [inv, quo, cust, bills] = await Promise.all([
-        (supabase as any).from("invoices").select("id,number,date,total,paid_amount,balance,customer_snapshot,status").order("created_at", { ascending: false }),
+        (supabase as any).from("invoices").select("id,number,date,subtotal,total,paid_amount,balance,customer_snapshot,status").order("created_at", { ascending: false }),
         (supabase as any).from("quotations").select("id,number,date,total,status,customer_snapshot").order("created_at", { ascending: false }).limit(5),
         (supabase as any).from("customers").select("id", { count: "exact", head: true }),
-        (supabase as any).from("supplier_bills").select("id,balance"),
+        (supabase as any).from("supplier_bills").select("id,subtotal,total,balance,paid_amount"),
       ]);
       const invoices = inv.data ?? [];
       const supplierBills = bills.data ?? [];
+      // Profit = net sales (excluding sales tax) − net purchase cost (excluding tax)
+      const revenue = invoices.reduce((s: number, i: any) => s + Number(i.subtotal || 0), 0);
+      const expense = supplierBills.reduce((s: number, b: any) => s + Number(b.subtotal || b.total || 0), 0);
+      const profit = revenue - expense;
       setStats({
         invoicesTotal: invoices.reduce((s: number, i: any) => s + Number(i.total || 0), 0),
         invoicesPaid: invoices.reduce((s: number, i: any) => s + Number(i.paid_amount || 0), 0),
@@ -35,6 +40,11 @@ function DashboardPage() {
         customerCount: cust.count ?? 0,
         supplierBalance: supplierBills.reduce((s: number, b: any) => s + Number(b.balance || 0), 0),
         billCount: supplierBills.length,
+        revenue,
+        expense,
+        profit,
+        margin: revenue > 0 ? (profit / revenue) * 100 : 0,
+        expensePaid: supplierBills.reduce((s: number, b: any) => s + Number(b.paid_amount || 0), 0),
       });
       setRecentInvoices(invoices.slice(0, 5));
       setRecentQuotes(quo.data ?? []);
@@ -63,6 +73,19 @@ function DashboardPage() {
         <Stat icon={<Wallet className="h-4 w-4" />} label="Cash Collected" value={fmtMoney(stats.invoicesPaid)} tone="green" />
         <Stat icon={<FileText className="h-4 w-4" />} label="Outstanding" value={fmtMoney(stats.invoicesBalance)} tone="amber" />
         <Stat icon={<Receipt className="h-4 w-4" />} label="Owed to Suppliers" value={fmtMoney(stats.supplierBalance)} tone="red" />
+      </div>
+
+      <div className="rounded-lg border border-slate-200 bg-white p-5 mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold">Profit &amp; Loss (all time)</h3>
+          <Link to="/accounting/ledgers" className="text-xs text-blue-600 hover:underline">Ledgers →</Link>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <PL label="Sales (excl. tax)" value={fmtMoney(stats.revenue)} />
+          <PL label="Purchase cost (excl. tax)" value={fmtMoney(stats.expense)} />
+          <PL label="Gross Profit" value={fmtMoney(stats.profit)} tone={stats.profit >= 0 ? "green" : "red"} />
+          <PL label="Margin" value={`${stats.margin.toFixed(1)}%`} tone={stats.profit >= 0 ? "green" : "red"} />
+        </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -99,6 +122,16 @@ function Stat({ icon, label, value, tone }: { icon: React.ReactNode; label: stri
         <span className={`h-8 w-8 rounded flex items-center justify-center ${tones[tone]}`}>{icon}</span>
       </div>
       <div className="mt-3 text-2xl font-bold">{value}</div>
+    </div>
+  );
+}
+
+function PL({ label, value, tone }: { label: string; value: string; tone?: "green" | "red" }) {
+  const color = tone === "green" ? "text-emerald-700" : tone === "red" ? "text-rose-700" : "text-slate-900";
+  return (
+    <div className="rounded-md bg-slate-50 border border-slate-200 p-4">
+      <div className="text-xs text-slate-500">{label}</div>
+      <div className={`text-xl font-bold mt-1 ${color}`}>{value}</div>
     </div>
   );
 }

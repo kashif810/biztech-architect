@@ -172,5 +172,8 @@
   .print-doc, .print-doc * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .a4-wrap { height: auto !important; }
   .a4-sheet { transform: none !important; width: 100% !important; box-shadow: none !important; min-height: 0 !important; }
+  .pdf-block { break-inside: avoid; page-break-inside: avoid; }
+  .print-doc table { break-inside: auto; }
+  .print-doc thead { display: table-header-group; }
   @page { size: A4; margin: 0; }
 }

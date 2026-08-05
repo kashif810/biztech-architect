@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, Link, useRouterState } from "@tanstack/react-router";
-import { LayoutGrid, Users, Truck, FileText, ShoppingCart, Receipt, Wallet, Settings, ClipboardList } from "lucide-react";
+import { LayoutGrid, Users, Truck, FileText, Receipt, Wallet, Settings, ClipboardList, BookOpen } from "lucide-react";
 import { requireSession, LogoutButton } from "@/lib/auth";
 
 export const Route = createFileRoute("/accounting")({
@@ -17,6 +17,7 @@ const NAV = [
   { to: "/accounting/invoices", label: "Invoices", icon: FileText },
   { to: "/accounting/payments", label: "Payments Received", icon: Wallet },
   { to: "/accounting/bills", label: "Supplier Bills", icon: Receipt },
+  { to: "/accounting/ledgers", label: "Ledgers", icon: BookOpen },
   { to: "/accounting/settings", label: "Settings", icon: Settings },
 ];
 
