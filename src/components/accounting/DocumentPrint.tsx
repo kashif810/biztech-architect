@@ -176,7 +176,7 @@ export function InvoicePrint({ doc, items, settings }: { doc: Doc; items: Item[]
   const company = settings.company_name || "Evertech Corporation";
   return (
     <A4Sheet>
-    <div className="print-doc bg-white text-slate-900 p-10 text-[13px]">
+    <div className="print-doc bg-white text-slate-900 p-10 text-[13px] flex flex-col" style={{ minHeight: A4_H }}>
       <div className="pdf-block text-center text-black">
         <div className="text-[32px] font-black tracking-[0.12em] uppercase leading-tight">
           {company || "EVERTECH CORPORATION"}
@@ -240,10 +240,10 @@ export function InvoicePrint({ doc, items, settings }: { doc: Doc; items: Item[]
                   {it.detail && <div className="text-[11px] text-slate-600 whitespace-pre-wrap">{it.detail}</div>}
                 </td>
                 <td className="border border-slate-300 p-2 text-center">{it.quantity}</td>
-                <td className="border border-slate-300 p-2 text-right">{Number(it.unit_price).toLocaleString()}</td>
-                <td className="border border-slate-300 p-2 text-right">{line.toLocaleString()}</td>
-                <td className="border border-slate-300 p-2 text-right">{tax.toLocaleString()}{rate !== Number(doc.tax_rate) && <span className="text-[10px] text-slate-500"> ({rate}%)</span>}</td>
-                <td className="border border-slate-300 p-2 text-right">{(line + tax).toLocaleString()}</td>
+                <td className="border border-slate-300 p-2 text-center">{Number(it.unit_price).toLocaleString()}</td>
+                <td className="border border-slate-300 p-2 text-center">{line.toLocaleString()}</td>
+                <td className="border border-slate-300 p-2 text-center">{tax.toLocaleString()}{rate !== Number(doc.tax_rate) && <span className="text-[10px] text-slate-500"> ({rate}%)</span>}</td>
+                <td className="border border-slate-300 p-2 text-center">{(line + tax).toLocaleString()}</td>
               </tr>
             );
           })}
@@ -253,10 +253,10 @@ export function InvoicePrint({ doc, items, settings }: { doc: Doc; items: Item[]
           <tr className="pdf-block bg-slate-100 font-bold text-black">
             <td className="border border-slate-300 p-2 text-center" colSpan={2}>TOTAL =</td>
             <td className="border border-slate-300 p-2 text-center">{items.reduce((s, it) => s + Number(it.quantity || 0), 0)}</td>
-            <td className="border border-slate-300 p-2 text-right">{items.reduce((s, it) => s + Number(it.unit_price || 0), 0).toLocaleString()}</td>
-            <td className="border border-slate-300 p-2 text-right">{doc.subtotal.toLocaleString()}</td>
-            <td className="border border-slate-300 p-2 text-right">{doc.tax_amount.toLocaleString()}</td>
-            <td className="border border-slate-300 p-2 text-right">{doc.total.toLocaleString()}</td>
+            <td className="border border-slate-300 p-2 text-center">{items.reduce((s, it) => s + Number(it.unit_price || 0), 0).toLocaleString()}</td>
+            <td className="border border-slate-300 p-2 text-center">{doc.subtotal.toLocaleString()}</td>
+            <td className="border border-slate-300 p-2 text-center">{doc.tax_amount.toLocaleString()}</td>
+            <td className="border border-slate-300 p-2 text-center">{doc.total.toLocaleString()}</td>
           </tr>
         </tbody>
       </table>
@@ -275,7 +275,7 @@ export function InvoicePrint({ doc, items, settings }: { doc: Doc; items: Item[]
           </div>
           <img src={stampAsset.url} alt="Evertech Corporation partner stamp" className="h-24 w-24 object-contain" />
       </div>
-      <div className="pdf-block mt-6 text-[10.5px] text-slate-700 whitespace-nowrap">
+      <div className="pdf-block mt-auto pt-10 text-center text-[10.5px] text-slate-700 whitespace-nowrap">
         This is a computer-generated Sales Tax Invoice. It is valid without a handwritten signature or physical company stamp.
       </div>
     </div>

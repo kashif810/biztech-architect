@@ -28,6 +28,7 @@ import { Route as AccountingQuotationsRouteImport } from './routes/accounting.qu
 import { Route as AccountingPaymentsRouteImport } from './routes/accounting.payments'
 import { Route as AccountingLedgersRouteImport } from './routes/accounting.ledgers'
 import { Route as AccountingInvoicesRouteImport } from './routes/accounting.invoices'
+import { Route as AccountingExpensesRouteImport } from './routes/accounting.expenses'
 import { Route as AccountingCustomersRouteImport } from './routes/accounting.customers'
 import { Route as AccountingBillsRouteImport } from './routes/accounting.bills'
 
@@ -126,6 +127,11 @@ const AccountingInvoicesRoute = AccountingInvoicesRouteImport.update({
   path: '/invoices',
   getParentRoute: () => AccountingRoute,
 } as any)
+const AccountingExpensesRoute = AccountingExpensesRouteImport.update({
+  id: '/expenses',
+  path: '/expenses',
+  getParentRoute: () => AccountingRoute,
+} as any)
 const AccountingCustomersRoute = AccountingCustomersRouteImport.update({
   id: '/customers',
   path: '/customers',
@@ -148,6 +154,7 @@ export interface FileRoutesByFullPath {
   '/setup-admin': typeof SetupAdminRoute
   '/accounting/bills': typeof AccountingBillsRoute
   '/accounting/customers': typeof AccountingCustomersRoute
+  '/accounting/expenses': typeof AccountingExpensesRoute
   '/accounting/invoices': typeof AccountingInvoicesRoute
   '/accounting/ledgers': typeof AccountingLedgersRoute
   '/accounting/payments': typeof AccountingPaymentsRoute
@@ -168,6 +175,7 @@ export interface FileRoutesByTo {
   '/setup-admin': typeof SetupAdminRoute
   '/accounting/bills': typeof AccountingBillsRoute
   '/accounting/customers': typeof AccountingCustomersRoute
+  '/accounting/expenses': typeof AccountingExpensesRoute
   '/accounting/invoices': typeof AccountingInvoicesRoute
   '/accounting/ledgers': typeof AccountingLedgersRoute
   '/accounting/payments': typeof AccountingPaymentsRoute
@@ -192,6 +200,7 @@ export interface FileRoutesById {
   '/setup-admin': typeof SetupAdminRoute
   '/accounting/bills': typeof AccountingBillsRoute
   '/accounting/customers': typeof AccountingCustomersRoute
+  '/accounting/expenses': typeof AccountingExpensesRoute
   '/accounting/invoices': typeof AccountingInvoicesRoute
   '/accounting/ledgers': typeof AccountingLedgersRoute
   '/accounting/payments': typeof AccountingPaymentsRoute
@@ -217,6 +226,7 @@ export interface FileRouteTypes {
     | '/setup-admin'
     | '/accounting/bills'
     | '/accounting/customers'
+    | '/accounting/expenses'
     | '/accounting/invoices'
     | '/accounting/ledgers'
     | '/accounting/payments'
@@ -237,6 +247,7 @@ export interface FileRouteTypes {
     | '/setup-admin'
     | '/accounting/bills'
     | '/accounting/customers'
+    | '/accounting/expenses'
     | '/accounting/invoices'
     | '/accounting/ledgers'
     | '/accounting/payments'
@@ -260,6 +271,7 @@ export interface FileRouteTypes {
     | '/setup-admin'
     | '/accounting/bills'
     | '/accounting/customers'
+    | '/accounting/expenses'
     | '/accounting/invoices'
     | '/accounting/ledgers'
     | '/accounting/payments'
@@ -419,6 +431,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountingInvoicesRouteImport
       parentRoute: typeof AccountingRoute
     }
+    '/accounting/expenses': {
+      id: '/accounting/expenses'
+      path: '/expenses'
+      fullPath: '/accounting/expenses'
+      preLoaderRoute: typeof AccountingExpensesRouteImport
+      parentRoute: typeof AccountingRoute
+    }
     '/accounting/customers': {
       id: '/accounting/customers'
       path: '/customers'
@@ -439,6 +458,7 @@ declare module '@tanstack/react-router' {
 interface AccountingRouteChildren {
   AccountingBillsRoute: typeof AccountingBillsRoute
   AccountingCustomersRoute: typeof AccountingCustomersRoute
+  AccountingExpensesRoute: typeof AccountingExpensesRoute
   AccountingInvoicesRoute: typeof AccountingInvoicesRoute
   AccountingLedgersRoute: typeof AccountingLedgersRoute
   AccountingPaymentsRoute: typeof AccountingPaymentsRoute
@@ -451,6 +471,7 @@ interface AccountingRouteChildren {
 const AccountingRouteChildren: AccountingRouteChildren = {
   AccountingBillsRoute: AccountingBillsRoute,
   AccountingCustomersRoute: AccountingCustomersRoute,
+  AccountingExpensesRoute: AccountingExpensesRoute,
   AccountingInvoicesRoute: AccountingInvoicesRoute,
   AccountingLedgersRoute: AccountingLedgersRoute,
   AccountingPaymentsRoute: AccountingPaymentsRoute,
@@ -505,13 +526,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
