@@ -178,7 +178,7 @@ export function InvoicePrint({ doc, items, settings }: { doc: Doc; items: Item[]
     <A4Sheet>
     <div className="print-doc bg-white text-slate-900 p-10 text-[13px]">
       <div className="pdf-block text-center text-black">
-        <div className="text-[30px] font-black tracking-tight uppercase leading-tight">
+        <div className="text-[32px] font-black tracking-[0.12em] uppercase leading-tight">
           {company || "EVERTECH CORPORATION"}
         </div>
         <div className="mt-1 text-[12px] font-semibold">{settings.address || "Office #28, 4th Floor, Hafeez Centre, Gulberg III, Lahore 54660, Pakistan"}</div>
@@ -196,8 +196,8 @@ export function InvoicePrint({ doc, items, settings }: { doc: Doc; items: Item[]
             <td className="border border-slate-300 p-2 text-center font-semibold text-[#0b1a3a]">{doc.number}</td>
           </tr>
           <tr>
-            <td className="border border-slate-300 p-2 font-bold bg-slate-50" rowSpan={3}></td>
-            <td className="border border-slate-300 p-2" rowSpan={3}>
+            <td className="border border-slate-300 p-2 font-bold bg-slate-50 align-top" rowSpan={3}></td>
+            <td className="border border-slate-300 p-2 align-top" rowSpan={3}>
               {c.address}<br />{[c.city, c.country].filter(Boolean).join(", ")}
               {(c.ntn || c.strn) && <><br />{c.ntn && <>NTN: {c.ntn}  </>}{c.strn && <>STRN: {c.strn}</>}</>}
             </td>
@@ -219,12 +219,12 @@ export function InvoicePrint({ doc, items, settings }: { doc: Doc; items: Item[]
         <thead>
           <tr className="bg-slate-100 text-black">
             <th className="border border-slate-400 p-2 w-12">Sr. No.</th>
-            <th className="border border-slate-400 p-2 text-left">Description</th>
+            <th className="border border-slate-400 p-2 text-center">Description</th>
             <th className="border border-slate-400 p-2 w-16">Qty</th>
-            <th className="border border-slate-400 p-2 w-24">Unit Price (Rs.)</th>
-            <th className="border border-slate-400 p-2 w-24">Taxable Value (Rs.)</th>
-            <th className="border border-slate-400 p-2 w-24">{taxLabel(doc.tax_rate)} (Rs.)</th>
-            <th className="border border-slate-400 p-2 w-28">Total Amount (Rs.)</th>
+            <th className="border border-slate-400 p-2 w-24">Unit Price</th>
+            <th className="border border-slate-400 p-2 w-24">Taxable Value</th>
+            <th className="border border-slate-400 p-2 w-24">{taxName(Number(doc.tax_rate))}</th>
+            <th className="border border-slate-400 p-2 w-28">Total Amount</th>
           </tr>
         </thead>
         <tbody>
@@ -253,7 +253,7 @@ export function InvoicePrint({ doc, items, settings }: { doc: Doc; items: Item[]
           <tr className="pdf-block bg-slate-100 font-bold text-black">
             <td className="border border-slate-300 p-2 text-center" colSpan={2}>TOTAL =</td>
             <td className="border border-slate-300 p-2 text-center">{items.reduce((s, it) => s + Number(it.quantity || 0), 0)}</td>
-            <td className="border border-slate-300 p-2"></td>
+            <td className="border border-slate-300 p-2 text-right">{items.reduce((s, it) => s + Number(it.unit_price || 0), 0).toLocaleString()}</td>
             <td className="border border-slate-300 p-2 text-right">{doc.subtotal.toLocaleString()}</td>
             <td className="border border-slate-300 p-2 text-right">{doc.tax_amount.toLocaleString()}</td>
             <td className="border border-slate-300 p-2 text-right">{doc.total.toLocaleString()}</td>
@@ -268,19 +268,16 @@ export function InvoicePrint({ doc, items, settings }: { doc: Doc; items: Item[]
         </div>
       )}
 
-      <div className="pdf-block mt-8 flex items-end justify-between text-[12px]">
-        <div className="text-[11px] max-w-[62%] text-slate-700 leading-snug">
-          This is a computer-generated Sales Tax Invoice. It is valid without a handwritten signature or physical company stamp.
-        </div>
-        <div className="flex items-end gap-3">
+      <div className="pdf-block mt-8 flex items-end gap-3 text-[12px]">
           <div className="text-center">
             <img src={signAsset.url} alt="Authorised signature" className="h-16 object-contain" />
             <div className="mt-1 border-t border-slate-400 pt-1 text-[11px]">Authorised Signatory</div>
           </div>
           <img src={stampAsset.url} alt="Evertech Corporation partner stamp" className="h-24 w-24 object-contain" />
-        </div>
       </div>
-      <div className="pdf-block mt-2 text-right text-[12px] font-semibold">For {company}</div>
+      <div className="pdf-block mt-6 text-[10.5px] text-slate-700 whitespace-nowrap">
+        This is a computer-generated Sales Tax Invoice. It is valid without a handwritten signature or physical company stamp.
+      </div>
     </div>
     </A4Sheet>
   );
