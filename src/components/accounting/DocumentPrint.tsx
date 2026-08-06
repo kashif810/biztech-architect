@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import evertechLogo from "@/assets/evertech-logo.png";
 import stampAsset from "@/assets/evertech-stamp.png.asset.json";
 import signAsset from "@/assets/evertech-signature.png.asset.json";
-import { fmtDate, fmtMoney, taxLabel } from "@/lib/accounting";
+import { fmtDate, fmtMoney, taxLabel, taxName } from "@/lib/accounting";
 
 type Settings = {
   company_name: string;
