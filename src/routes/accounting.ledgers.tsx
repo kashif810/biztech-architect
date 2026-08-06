@@ -2,31 +2,35 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { fmtDate, fmtMoney } from "@/lib/accounting";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, ChevronDown, ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/accounting/ledgers")({ component: LedgersPage });
 
 type Entry = { date: string; ref: string; type: string; debit: number; credit: number };
 
 function LedgersPage() {
-  const [tab, setTab] = useState<"customers" | "suppliers">("customers");
+  const [tab, setTab] = useState<"customers" | "suppliers" | "expenses">("customers");
   const [open, setOpen] = useState<{ id: string; name: string } | null>(null);
-  const [data, setData] = useState<any>({ customers: [], suppliers: [], invoices: [], payments: [], bills: [], spays: [] });
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [data, setData] = useState<any>({ customers: [], suppliers: [], invoices: [], payments: [], bills: [], spays: [], items: [], expenses: [] });
 
   useEffect(() => {
     (async () => {
-      const [customers, suppliers, invoices, payments, bills, spays] = await Promise.all([
+      const [customers, suppliers, invoices, payments, bills, spays, items, expenses] = await Promise.all([
         (supabase as any).from("customers").select("id,name,company"),
         (supabase as any).from("suppliers").select("id,name,company"),
         (supabase as any).from("invoices").select("id,number,date,total,paid_amount,balance,customer_id,customer_snapshot"),
         (supabase as any).from("payments").select("id,date,amount,method,reference_no,customer_id,invoice_id,invoices(number)"),
         (supabase as any).from("supplier_bills").select("id,number,date,total,paid_amount,balance,supplier_id,supplier_snapshot,due_date"),
         (supabase as any).from("supplier_payments").select("id,date,amount,method,reference_no,supplier_id,bill_id,supplier_bills(number)"),
+        (supabase as any).from("invoice_items").select("invoice_id,description,quantity,unit_price,amount,sort_order"),
+        (supabase as any).from("expenses").select("*").order("date", { ascending: false }),
       ]);
       setData({
         customers: customers.data ?? [], suppliers: suppliers.data ?? [],
         invoices: invoices.data ?? [], payments: payments.data ?? [],
         bills: bills.data ?? [], spays: spays.data ?? [],
+        items: items.data ?? [], expenses: expenses.data ?? [],
       });
     })();
   }, []);
