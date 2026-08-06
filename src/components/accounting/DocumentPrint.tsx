@@ -176,7 +176,7 @@ export function InvoicePrint({ doc, items, settings }: { doc: Doc; items: Item[]
   const company = settings.company_name || "Evertech Corporation";
   return (
     <A4Sheet>
-    <div className="print-doc bg-white text-slate-900 p-10 text-[13px]">
+    <div className="print-doc bg-white text-slate-900 p-10 text-[13px] flex flex-col" style={{ minHeight: A4_H }}>
       <div className="pdf-block text-center text-black">
         <div className="text-[32px] font-black tracking-[0.12em] uppercase leading-tight">
           {company || "EVERTECH CORPORATION"}
