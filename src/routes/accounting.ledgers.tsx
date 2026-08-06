@@ -21,7 +21,7 @@ function LedgersPage() {
         (supabase as any).from("suppliers").select("id,name,company"),
         (supabase as any).from("invoices").select("id,number,date,total,paid_amount,balance,customer_id,customer_snapshot"),
         (supabase as any).from("payments").select("id,date,amount,method,reference_no,customer_id,invoice_id,invoices(number)"),
-        (supabase as any).from("supplier_bills").select("id,number,date,total,paid_amount,balance,supplier_id,supplier_snapshot,due_date"),
+        (supabase as any).from("supplier_bills").select("id,number,date,total,paid_amount,balance,supplier_id,supplier_snapshot,due_date,items"),
         (supabase as any).from("supplier_payments").select("id,date,amount,method,reference_no,supplier_id,bill_id,supplier_bills(number)"),
         (supabase as any).from("invoice_items").select("invoice_id,description,quantity,unit_price,amount,sort_order"),
         (supabase as any).from("expenses").select("*").order("date", { ascending: false }),
@@ -51,6 +51,27 @@ function LedgersPage() {
       return { id: s.id, name: s.company || s.name, docs: bl.length, billed, paid, balance: billed - paid };
     });
   }, [tab, data]);
+
+  /** Documents (invoices or bills) for the opened party, with their line items. */
+  const docs = useMemo(() => {
+    if (!open) return [] as any[];
+    if (tab === "customers") {
+      return data.invoices
+        .filter((i: any) => i.customer_id === open.id)
+        .sort((a: any, b: any) => a.date.localeCompare(b.date))
+        .map((i: any) => ({
+          id: i.id, number: i.number, date: i.date, total: Number(i.total || 0), paid: Number(i.paid_amount || 0), balance: Number(i.balance || 0),
+          lines: data.items.filter((x: any) => x.invoice_id === i.id).sort((a: any, b: any) => a.sort_order - b.sort_order),
+        }));
+    }
+    return data.bills
+      .filter((b: any) => b.supplier_id === open.id)
+      .sort((a: any, b: any) => a.date.localeCompare(b.date))
+      .map((b: any) => ({
+        id: b.id, number: b.number, date: b.date, total: Number(b.total || 0), paid: Number(b.paid_amount || 0), balance: Number(b.balance || 0),
+        lines: Array.isArray(b.items) ? b.items : [],
+      }));
+  }, [open, tab, data]);
 
   const entries: Entry[] = useMemo(() => {
     if (!open) return [];
